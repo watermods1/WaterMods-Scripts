@@ -1,0 +1,447 @@
+--watermods minecraft script v1.0.7
+-- Services
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Game Remotes
+local gameremotes = ReplicatedStorage:WaitForChild("GameRemotes")
+local moveitems = gameremotes:FindFirstChild("MoveItem") or gameremotes:FindFirstChild("MoveItems")
+local sortitems = gameremotes:FindFirstChild("SortItem") or gameremotes:FindFirstChild("SortItems")
+
+-- Globals
+local usetables = false
+local chestDupe = false
+local xrayEnabled = false
+local blacklist = {}
+
+
+-- Clear old UI
+for _,v in pairs(game.CoreGui:GetChildren()) do
+    if v.Name == "UiLib" then v:Destroy() end
+end
+
+-- Notification function
+local function notify(msg)
+    local notif = Instance.new("ScreenGui")
+    notif.Name = "NotifyGui"
+    notif.Parent = game.CoreGui
+    notif.ResetOnSpawn = false
+
+    local frame = Instance.new("Frame")
+    frame.Parent = notif
+    frame.Size = UDim2.new(0, 300, 0, 50)
+    frame.Position = UDim2.new(0.5, -150, 0.1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    frame.BorderSizePixel = 0
+    frame.ClipsDescendants = true
+
+    local text = Instance.new("TextLabel")
+    text.Parent = frame
+    text.Size = UDim2.new(1,0,1,0)
+    text.BackgroundTransparency = 1
+    text.Text = msg
+    text.TextScaled = true
+    text.TextColor3 = Color3.fromRGB(255,255,255)
+    text.TextXAlignment = Enum.TextXAlignment.Center
+    text.TextYAlignment = Enum.TextYAlignment.Center
+
+    game:GetService("Debris"):AddItem(notif, 1.5) -- changed from 3 to 1.5
+end
+
+-- UI Library
+local UiLib = Instance.new("ScreenGui")
+UiLib.Name = "UiLib"
+UiLib.Parent = game.CoreGui
+UiLib.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local function getNextWindowPos()
+    local biggest = 0
+    local lastWindow = nil
+    for _, v in pairs(UiLib:GetChildren()) do
+        if v:IsA("Frame") and v.Position.X.Offset > biggest then
+            biggest = v.Position.X.Offset
+            lastWindow = v
+        end
+    end
+    if biggest == 0 then
+        biggest = 15
+    else
+        biggest = biggest + lastWindow.Size.X.Offset + 10
+    end
+    return biggest
+end
+
+local Library = {}
+
+function Library:Window(title)
+    local Top = Instance.new("Frame")
+    Top.Name = "Top"
+    Top.Parent = UiLib
+    Top.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Top.BorderSizePixel = 0
+    Top.Position = UDim2.new(0, getNextWindowPos(), 0.01, 0)
+    Top.Size = UDim2.new(0, 204, 0, 28)
+    Top.Active = true
+    Top.Draggable = true
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = Top
+
+    local Container = Instance.new("Frame")
+    Container.Name = "Container"
+    Container.Parent = Top
+    Container.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    Container.Position = UDim2.new(0,0,1,0)
+    Container.Size = UDim2.new(0,204,0,0)
+    Container.ClipsDescendants = true
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = Container
+    UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0,5)
+
+    local Title = Instance.new("TextLabel")
+    Title.Parent = Top
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0.03,0,0,0)
+    Title.Size = UDim2.new(0, 170, 0, 28)
+    Title.Font = Enum.Font.GothamSemibold
+    Title.Text = title
+    Title.TextColor3 = Color3.fromRGB(255,0,0)
+    Title.TextScaled = true
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Arrow = Instance.new("TextLabel")
+    Arrow.Parent = Top
+    Arrow.BackgroundTransparency = 1
+    Arrow.Position = UDim2.new(0.9,0,0,0)
+    Arrow.Size = UDim2.new(0,20,0,28)
+    Arrow.Font = Enum.Font.GothamSemibold
+    Arrow.Text = ">"
+    Arrow.TextColor3 = Color3.fromRGB(0,150,255)
+    Arrow.TextScaled = true
+    Arrow.TextXAlignment = Enum.TextXAlignment.Center
+    Arrow.TextYAlignment = Enum.TextYAlignment.Center
+
+    local expanded = false
+    local function toggle()
+        if expanded then
+            TweenService:Create(Container, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size=UDim2.new(0,204,0,0)}):Play()
+            Arrow.Text = ">"
+            expanded = false
+        else
+            local contentHeight = 0
+            for _,child in pairs(Container:GetChildren()) do
+                if child:IsA("GuiObject") then
+                    contentHeight = contentHeight + child.Size.Y.Offset + UIListLayout.Padding.Offset
+                end
+            end
+            if contentHeight > 760 then contentHeight = 760 end
+            TweenService:Create(Container, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size=UDim2.new(0,204,0,contentHeight)}):Play()
+            Arrow.Text = "v"
+            expanded = true
+        end
+    end
+
+    Title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then toggle() end
+    end)
+    Arrow.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then toggle() end
+    end)
+
+    local lib = {}
+
+    function lib:Button(name, callback)
+        local btnFrame = Instance.new("Frame")
+        btnFrame.Name = "ButtonContainer"
+        btnFrame.Parent = Container
+        btnFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        btnFrame.Size = UDim2.new(0,194,0,28)
+        btnFrame.BorderSizePixel = 0
+
+        local btn = Instance.new("TextButton")
+        btn.Parent = btnFrame
+        btn.BackgroundTransparency = 1
+        btn.Size = UDim2.new(1,0,1,0)
+        btn.Text = name
+        btn.Font = Enum.Font.GothamSemibold
+        btn.TextColor3 = Color3.fromRGB(255,0,0)
+        btn.TextScaled = true
+
+        btn.MouseButton1Click:Connect(function()
+            pcall(callback)
+        end)
+    end
+
+    function lib:Toggle(name, callback)
+        local toggleFrame = Instance.new("Frame")
+        toggleFrame.Name = "ToggleContainer"
+        toggleFrame.Parent = Container
+        toggleFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        toggleFrame.Size = UDim2.new(0,204,0,28)
+        toggleFrame.BorderSizePixel = 0
+
+        local toggleLabel = Instance.new("TextLabel")
+        toggleLabel.Parent = toggleFrame
+        toggleLabel.BackgroundTransparency = 1
+        toggleLabel.Position = UDim2.new(0.03,0,0,0)
+        toggleLabel.Size = UDim2.new(0,140,0,28)
+        toggleLabel.Font = Enum.Font.GothamSemibold
+        toggleLabel.Text = name
+        toggleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+        toggleLabel.TextScaled = true
+        toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+        local toggleBtn = Instance.new("TextButton")
+        toggleBtn.Parent = toggleFrame
+        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,150,255)
+        toggleBtn.Size = UDim2.new(0,24,0,24)
+        toggleBtn.Position = UDim2.new(0.85,0,0.15,0)
+        toggleBtn.Text = ""
+        toggleBtn.AutoButtonColor = false
+
+        local toggled = false
+        toggleBtn.MouseButton1Click:Connect(function()
+            toggled = not toggled
+            callback(toggled)
+            toggleBtn.BackgroundColor3 = toggled and Color3.fromRGB(0,255,0) or Color3.fromRGB(0,150,255)
+        end)
+    end
+
+    return lib
+end
+
+-- =========================
+-- X-Ray Setup
+-- =========================
+local mainScripts = Library:Window("Main Scripts")
+local miscWindow = Library:Window("Settings / Misc")
+local blacklistWindow = Library:Window("X-Ray Blacklist [Beta]")
+
+local u128 = { ["CoalOre"] = Color3.fromRGB(56, 59, 56),
+    ["IronOre"] = Color3.fromRGB(110, 105, 105),
+    ["SteelOre"] = Color3.fromRGB(110, 105, 105),
+    ["RainbowiteOre"] = Color3.fromRGB(25, 0, 25),
+    ["GoldOre"] = Color3.fromRGB(245, 242, 71),
+    ["RubyOre"] = Color3.fromRGB(245, 71, 48),
+    ["DiamondOre"] = Color3.fromRGB(35, 207, 219),
+    ["SaphireOre"] = Color3.fromRGB(18, 18, 120),
+    ["AmethystOre"] = Color3.fromRGB(255, 105, 180),
+    ["OverlordOre"] = Color3.fromRGB(18, 18, 120),
+    ["Obsidian"] = Color3.fromRGB(0, 0, 0),
+    ["PurpleFlower"] = Color3.fromRGB(25, 0, 25),
+    ["DiamondLuckyBlock"] = Color3.fromRGB(51, 204, 51),
+    ["GoldLuckyBlock"] = Color3.fromRGB(153, 102, 0),
+}
+
+local x = workspace:FindFirstChild("Blocks")
+local inventoryGui = LocalPlayer.PlayerGui.HUDGui.Inventory
+local ofon = false
+
+-- function to create X-Ray Billboard
+local function createXray(part, color)
+    if part:FindFirstChild("bulb") then return end
+    local gui = Instance.new("BillboardGui")
+    gui.Name = "bulb"
+    gui.Parent = part
+    gui.Size = UDim2.new(1,0,1,0)
+    gui.AlwaysOnTop = true
+    gui.Active = true
+    gui.Enabled = not inventoryGui.Visible -- hide if inventory open
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0.8,0,0.8,0)
+    frame.Position = UDim2.new(0.1,0,0.1,0)
+    frame.BackgroundColor3 = color
+    frame.BorderSizePixel = 3
+    frame.BorderColor3 = Color3.fromRGB(31,31,31)
+    frame.Parent = gui
+end
+
+
+inventoryGui:GetPropertyChangedSignal("Visible"):Connect(function()
+    for _, chunk in pairs(x:GetChildren()) do
+        for _, part in pairs(chunk:GetChildren()) do
+            local bulb = part:FindFirstChild("bulb")
+            if bulb then
+                bulb.Enabled = not inventoryGui.Visible
+            end
+        end
+    end
+end)
+
+-- X-Ray toggle
+mainScripts:Toggle("X-Ray [Beta]", function(v)
+    ofon = v
+    if not v then
+        for _, chunk in pairs(x:GetChildren()) do
+            for _, part in pairs(chunk:GetChildren()) do
+                if u128[part.Name] and part:FindFirstChild("bulb") then
+                    part.bulb:Destroy()
+                end
+            end
+        end
+    else
+        for _, chunk in pairs(x:GetChildren()) do
+            for _, part in pairs(chunk:GetChildren()) do
+                if u128[part.Name] and not part:FindFirstChild("bulb") and (not blacklist[part.Name]) then
+                    createXray(part, u128[part.Name])
+                end
+            end
+        end
+        x.DescendantAdded:Connect(function(part)
+            if part:IsA("BasePart") and u128[part.Name] and not blacklist[part.Name] and ofon then
+                createXray(part, u128[part.Name])
+            end
+        end)
+    end
+end)
+
+-- blacklist toggles
+for oreName,_ in pairs(u128) do
+    blacklist[oreName] = false
+    blacklistWindow:Toggle(oreName, function(enabled)
+        blacklist[oreName] = enabled
+        for _, chunk in pairs(x:GetChildren()) do
+            for _, part in pairs(chunk:GetChildren()) do
+                local bulb = part:FindFirstChild("bulb")
+                if bulb and enabled then
+                    bulb:Destroy()
+                elseif ofon and not bulb and not enabled and u128[part.Name] then
+                    createXray(part, u128[part.Name])
+                end
+            end
+        end
+    end)
+end
+
+-- =========================
+-- Main Scripts Buttons
+-- =========================
+mainScripts:Button("Dupe Selected Item", function()
+    local slot = LocalPlayer.PlayerGui.HUDGui.Inventory.Slots["Slot-1"].SlotNA.Count
+    if slot.Text=="0" then return notify("❗Select 2 items first❗") end
+    if slot.Text=="64" then return notify("❗Item limit reached❗") end
+    local howmuch = 64 - tonumber(slot.Text)
+    local success,_ = pcall(function()
+        if usetables then moveitems:InvokeServer({-1,82,true,-howmuch})
+        else moveitems:InvokeServer(-1,82,true,-howmuch) end
+    end)
+    if success then notify("✅Item duped!✅") else notify("❌Error duplicating item❌") end
+end)
+
+mainScripts:Button("Dupe Method 2", function()
+    local slot = LocalPlayer.PlayerGui.HUDGui.Inventory.Slots["Slot-1"].SlotNA.Count
+    local slot0 = LocalPlayer.PlayerGui.HUDGui.Inventory.Slots["Slot0"].Slot.Count
+    if slot.Text~="2" then return notify("❗Need exactly 2 items selected❗") end
+    if slot0.Text~="0" then return notify("❗Free first inventory slot❗") end
+    local args = {-1,0,true,0.01}
+    if usetables then moveitems:InvokeServer({args}) else moveitems:InvokeServer(unpack(args)) end
+    notify("✅Duped!✅")
+end)
+
+mainScripts:Button("Dupe With Chest", function()
+    task.spawn(function()
+        for i=1,math.random(20,50) do
+            task.spawn(function() sortitems:InvokeServer() end)
+        end
+    end)
+    if not chestDupe then sortitems:InvokeServer(36) else for i=36,62 do sortitems:InvokeServer(i) end end
+    notify("✅Duped with chest!✅")
+end)
+
+mainScripts:Button("Dupe Selected Item To Infinite", function()
+    local slot = LocalPlayer.PlayerGui.HUDGui.Inventory.Slots["Slot-1"].SlotNA.Count
+    if slot.Text=="0" then return notify("❗Select 2 items first❗") end
+    if slot.Text=="99999999999999999" then return notify("❗Item limit reached❗") end
+    local howmuch = 99999999999999999 - tonumber(slot.Text)
+    local success,_ = pcall(function()
+        if usetables then moveitems:InvokeServer({-1,82,true,-howmuch})
+        else moveitems:InvokeServer(-1,82,true,-howmuch) end
+    end)
+    if success then notify("✅Item duped!✅") else notify("❌Error duplicating item❌") end
+end)
+
+mainScripts:Button("Kick Chest [Doesn't work yet]", function()
+    notify("Attempted to bug out 2 items in the first chest slot. Anyone opening it may get kicked.")
+
+    if not activatedkick then
+        activatedkick = true
+
+        local mt = getrawmetatable(game)
+        local oldNamecall = mt.__namecall
+        local protectFunc = newcclosure or protect_function or function(f) return f end
+
+        setreadonly(mt, false)
+        mt.__namecall = protectFunc(function(self, ...)
+            local method = getnamecallmethod()
+            if method == "Kick" then
+                -- Block kicks indefinitely
+                wait(math.huge)
+                return
+            end
+            return oldNamecall(self, ...)
+        end)
+        setreadonly(mt, true)
+
+        -- Hook the LocalPlayer:Kick method
+        hookfunction(
+            LocalPlayer.Kick,
+            protectFunc(function()
+                wait(math.huge)
+            end)
+        )
+    end
+end)
+
+mainScripts:Button("No Kick (Click Before Using)", function()
+    notify("No Kick enabled. Always Enable before doing anything risky.")
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Anti-Kick/main/Anti-Kick.lua"))()
+end)
+
+-- =========================
+-- Misc Window Buttons
+-- =========================
+miscWindow:Toggle("Dupe Entire Chest", function(v) chestDupe=v end)
+miscWindow:Toggle("Remote Tables Method", function(v) usetables=v notify("Remote Tables Method toggled") end)
+
+miscWindow:Button("Fix Inventory Lag", function()
+    local craft = LocalPlayer.PlayerGui.HUDGui.Inventory:FindFirstChild("CraftingBook")
+    if craft then craft:Destroy() notify("Lag fixed") else notify("CraftingBook not found") end
+end)
+
+miscWindow:Button("Suicide", function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.Health = 0
+    end
+end)
+
+miscWindow:Button("Remove Fall Damage & Suffocation", function()
+    local gr = game:GetService("ReplicatedStorage"):FindFirstChild("GameRemotes")
+    if not gr then
+        notify("GameRemotes not found")
+        return
+    end
+
+    local demo = gr:FindFirstChild("Demo")
+    if demo then
+        demo:Destroy()
+        notify("Fall damage & suffocation removed")
+    else
+        notify("Demo remote already removed")
+    end
+end)
+
+
+miscWindow:Button("Made By WaterMods", function()
+    notify("Made By WaterMods")
+end)
+
+
+
+notify("Script loaded successfully ✅")
