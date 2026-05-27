@@ -1658,7 +1658,7 @@ Toggle(mainContainer, "Anti AFK lmao", false, function(v)
     afk = v
     for _, c in ipairs(getconnections(player.Idled)) do if v then c:Disable() else c:Enable() end end
 end)
-Toggle(mainContainer, "Anti-Adonis (load once, Irreversible)", false, function(v)
+Toggle(mainContainer, "Anti-Adonis (Irreversible)", false, function(v)
     if v then
         if not antiKickLoaded then
             if getgc then
