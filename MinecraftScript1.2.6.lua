@@ -52,60 +52,79 @@ updateDeviceType()
 
 local uiConfig = {}
 
+
 local function buildUIConfig()
     if deviceType == "Phone" then
         uiConfig = {
-            windowWidth = math.min(220, screenWidth - 20),
-            headerHeight = 36,
-            buttonHeight = 38,
-            sliderHeight = 58,
-            dropdownItemHeight = 38,
-            fontSize = 13,
-            titleSize = 14,
-            smallTextSize = 11,
-            padding = 6,
-            cornerRadius = 8,
-            scrollBarThickness = 4,
-            windowSpacingY = 8,
-            initialYOffset = 10,
-            sideMargin = 8,
+            windowWidth = 185,
+            headerHeight = 24,
+
+            buttonHeight = 24,
+            sliderHeight = 42,
+            dropdownItemHeight = 24,
+
+            fontSize = 11,
+            titleSize = 12,
+            smallTextSize = 10,
+
+            padding = 3,
+            cornerRadius = 5,
+
+            scrollBarThickness = 2,
+
+            windowSpacingY = 4,
+            initialYOffset = 6,
+            sideMargin = 6,
         }
+
     elseif deviceType == "Tablet" then
         uiConfig = {
-            windowWidth = math.min(260, screenWidth * 0.35),
-            headerHeight = 34,
-            buttonHeight = 36,
-            sliderHeight = 56,
-            dropdownItemHeight = 36,
-            fontSize = 13,
-            titleSize = 14,
-            smallTextSize = 11,
-            padding = 6,
-            cornerRadius = 8,
-            scrollBarThickness = 4,
-            windowSpacingY = 10,
-            initialYOffset = 15,
-            sideMargin = 16,
+            windowWidth = 205,
+            headerHeight = 24,
+
+            buttonHeight = 24,
+            sliderHeight = 42,
+            dropdownItemHeight = 24,
+
+            fontSize = 11,
+            titleSize = 12,
+            smallTextSize = 10,
+
+            padding = 3,
+            cornerRadius = 5,
+
+            scrollBarThickness = 2,
+
+            windowSpacingY = 5,
+            initialYOffset = 8,
+            sideMargin = 8,
         }
+
     else
         uiConfig = {
-            windowWidth = 240,
-            headerHeight = 30,
-            buttonHeight = 32,
-            sliderHeight = 54,
-            dropdownItemHeight = 32,
-            fontSize = 13,
-            titleSize = 14,
-            smallTextSize = 11,
-            padding = 5,
-            cornerRadius = 6,
-            scrollBarThickness = 4,
-            windowSpacingY = 8,
-            initialYOffset = 20,
-            sideMargin = 12,
+            windowWidth = 215,
+            headerHeight = 24,
+
+            buttonHeight = 24,
+            sliderHeight = 42,
+            dropdownItemHeight = 24,
+
+            fontSize = 11,
+            titleSize = 12,
+            smallTextSize = 10,
+
+            padding = 3,
+            cornerRadius = 5,
+
+            scrollBarThickness = 2,
+
+            windowSpacingY = 6,
+            initialYOffset = 10,
+            sideMargin = 10,
         }
     end
 end
+
 buildUIConfig()
 
 local isMobile = isPhone or isTablet
@@ -274,7 +293,7 @@ local function getWindowPositions()
     local positions = {}
     if isPhone then
         local baseY = 36
-        local gap = uiConfig.windowSpacingY + 18   -- tighter
+        local gap = uiConfig.windowSpacingY + uiConfig.headerHeight 
         positions.main    = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY)
         positions.combat  = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY + gap)
         positions.world   = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY + gap*2)
@@ -286,7 +305,7 @@ local function getWindowPositions()
         local leftX = uiConfig.sideMargin
         local rightX = screenWidth - uiConfig.windowWidth - uiConfig.sideMargin
         local baseY = 36
-        local gap = uiConfig.windowSpacingY + 18
+        local gap = uiConfig.windowSpacingY + uiConfig.headerHeight
         positions.main    = UDim2.new(0, leftX, 0, baseY)
         positions.combat  = UDim2.new(0, leftX, 0, baseY + gap)
         positions.world   = UDim2.new(0, leftX, 0, baseY + gap*2)
@@ -314,7 +333,7 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; gui.DisplayOrder = 999
 
 local COLORS = {
     Window = Color3.fromRGB(20,25,40), Header = Color3.fromRGB(25,35,65),
-    Button = Color3.fromRGB(30,45,85), ButtonOn = Color3.fromRGB(40,75,150),
+    Button = Color3.fromRGB(26,32,52), ButtonOn = Color3.fromRGB(55,110,220),
     Text = Color3.new(1,1,1), Dropdown = Color3.fromRGB(15,20,35)
 }
 
@@ -456,7 +475,7 @@ local function CreateWindow(title, pos)
     
     local outerContainer = Instance.new("Frame", window)
     outerContainer.Position = UDim2.new(0, 0, 0, uiConfig.headerHeight)
-    outerContainer.Size = UDim2.new(1, 0, 0, 200)
+    outerContainer.Size = UDim2.new(1, 0, 0, 120)
     outerContainer.BackgroundTransparency = 1
     outerContainer.ClipsDescendants = true
     
@@ -483,7 +502,7 @@ local function CreateWindow(title, pos)
     local function updateSize()
         if expanded then
             local maxHeight = camera.ViewportSize.Y - 150
-            local height = math.min(layout.AbsoluteContentSize.Y + 30, maxHeight)
+            local height = math.min(layout.AbsoluteContentSize.Y + 8, maxHeight)
             container.Size = UDim2.new(1, 0, 0, height)
             outerContainer.Size = UDim2.new(1, 0, 0, height)
             window.Size = UDim2.new(0, uiConfig.windowWidth, 0, height + uiConfig.headerHeight)
@@ -501,7 +520,8 @@ end
 local function Toggle(parent, text, showInArray, callback)
     if showInArray == nil then showInArray = true end
     local button = Instance.new("TextButton", parent)
-    button.Size = UDim2.new(0.95, 0, 0, uiConfig.buttonHeight)
+    button.Size = UDim2.new(1, -6, 0, uiConfig.buttonHeight)
+    button.Position = UDim2.new(0, 3, 0, 0)
     button.BackgroundColor3 = COLORS.Button
     button.TextColor3 = COLORS.Text
     button.Font = Enum.Font.Gotham
@@ -594,7 +614,7 @@ local function Dropdown(parent, text)
     local open = false
     local function update()
         if open then
-            local size = math.min(layout.AbsoluteContentSize.Y + 12, 180)
+            local size = math.min(layout.AbsoluteContentSize.Y + 4, 120)
             innerContent.Size = UDim2.new(1, 0, 0, size)
             contentScroll.CanvasSize = UDim2.new(0, 0, 0, size)
             content.Size = UDim2.new(1, 0, 0, size)
@@ -631,7 +651,7 @@ local function Slider(parent, text, min, max, default, step, callback)
     label.Text = text.." : "..tostring(default)
     local bar = Instance.new("TextButton", holder)
     bar.Position = UDim2.new(0, 6, 0, 22)
-    bar.Size = UDim2.new(1, -12, 0, 12)
+    bar.Size = UDim2.new(1, -12, 0, 8)
     bar.BackgroundColor3 = Color3.fromRGB(45,65,120)
     bar.BorderSizePixel = 0
     bar.Text = ""
@@ -645,7 +665,7 @@ local function Slider(parent, text, min, max, default, step, callback)
     Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
     local decBtn = Instance.new("TextButton", holder)
     decBtn.Size = UDim2.new(0, 28, 0, 20)
-    decBtn.Position = UDim2.new(0, 6, 0, 38)
+    decBtn.Position = UDim2.new(0, 6, 0, 26)
     decBtn.BackgroundColor3 = Color3.fromRGB(40,55,100)
     decBtn.Text = "-"
     decBtn.TextColor3 = COLORS.Text
@@ -655,7 +675,7 @@ local function Slider(parent, text, min, max, default, step, callback)
     Instance.new("UICorner", decBtn).CornerRadius = UDim.new(0, uiConfig.cornerRadius/2)
     local incBtn = Instance.new("TextButton", holder)
     incBtn.Size = UDim2.new(0, 28, 0, 20)
-    incBtn.Position = UDim2.new(0, 38, 0, 38)
+    incBtn.Position = UDim2.new(0, 34, 0, 26)
     incBtn.BackgroundColor3 = Color3.fromRGB(40,55,100)
     incBtn.Text = "+"
     incBtn.TextColor3 = COLORS.Text
