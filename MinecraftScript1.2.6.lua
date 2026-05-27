@@ -28,15 +28,11 @@ local isPhone = false
 local isTablet = false
 
 local function updateDeviceType()
-
     viewportSize = camera.ViewportSize
     screenWidth = viewportSize.X
     screenHeight = viewportSize.Y
-
     local shortest = math.min(screenWidth, screenHeight)
-
     if UserInputService.TouchEnabled then
-
         if shortest < 700 then
             deviceType = "Phone"
             isPhone = true
@@ -46,7 +42,6 @@ local function updateDeviceType()
             isPhone = false
             isTablet = true
         end
-
     else
         deviceType = "PC"
         isPhone = false
@@ -58,84 +53,55 @@ updateDeviceType()
 local uiConfig = {}
 
 local function buildUIConfig()
-
-    local shortest = math.min(screenWidth, screenHeight)
-
     if deviceType == "Phone" then
-
         uiConfig = {
-
-            windowWidth = math.min(320, screenWidth * 0.80),
-
-            headerHeight = 42,
-            buttonHeight = 44,
-            sliderHeight = 68,
-            dropdownItemHeight = 42,
-
-            fontSize = 14,
-            titleSize = 16,
-            smallTextSize = 12,
-
-            padding = 8,
-            cornerRadius = 12,
-
-            scrollBarThickness = 4,
-
-            windowSpacingY = 12,
-            initialYOffset = 12,
-
-            sideMargin = 12,
-        }
-
-    elseif deviceType == "Tablet" then
-
-        uiConfig = {
-
-            windowWidth = math.min(360, screenWidth * 0.38),
-
-            headerHeight = 40,
-            buttonHeight = 40,
-            sliderHeight = 64,
-            dropdownItemHeight = 40,
-
-            fontSize = 14,
-            titleSize = 15,
-            smallTextSize = 12,
-
-            padding = 8,
-            cornerRadius = 10,
-
-            scrollBarThickness = 5,
-
-            windowSpacingY = 14,
-            initialYOffset = 18,
-
-            sideMargin = 20,
-        }
-
-    else
-
-        uiConfig = {
-
-            windowWidth = 250,
-
-            headerHeight = 30,
-            buttonHeight = 32,
-            sliderHeight = 56,
-            dropdownItemHeight = 34,
-
-            fontSize = 14,
-            titleSize = 16,
-            smallTextSize = 12,
-
+            windowWidth = math.min(220, screenWidth - 20),
+            headerHeight = 36,
+            buttonHeight = 38,
+            sliderHeight = 58,
+            dropdownItemHeight = 38,
+            fontSize = 13,
+            titleSize = 14,
+            smallTextSize = 11,
             padding = 6,
             cornerRadius = 8,
-
             scrollBarThickness = 4,
-
+            windowSpacingY = 8,
+            initialYOffset = 10,
+            sideMargin = 8,
+        }
+    elseif deviceType == "Tablet" then
+        uiConfig = {
+            windowWidth = math.min(260, screenWidth * 0.35),
+            headerHeight = 34,
+            buttonHeight = 36,
+            sliderHeight = 56,
+            dropdownItemHeight = 36,
+            fontSize = 13,
+            titleSize = 14,
+            smallTextSize = 11,
+            padding = 6,
+            cornerRadius = 8,
+            scrollBarThickness = 4,
             windowSpacingY = 10,
+            initialYOffset = 15,
+            sideMargin = 16,
+        }
+    else
+        uiConfig = {
+            windowWidth = 240,
+            headerHeight = 30,
+            buttonHeight = 32,
+            sliderHeight = 54,
+            dropdownItemHeight = 32,
+            fontSize = 13,
+            titleSize = 14,
+            smallTextSize = 11,
+            padding = 5,
+            cornerRadius = 6,
+            scrollBarThickness = 4,
+            windowSpacingY = 8,
             initialYOffset = 20,
-
             sideMargin = 12,
         }
     end
@@ -251,8 +217,8 @@ end
 local function getWindowPositions()
     local positions = {}
     if isPhone then
-        local baseY = 50
-        local gap = uiConfig.windowSpacingY + 30
+        local baseY = 40
+        local gap = uiConfig.windowSpacingY + 20
         positions.main    = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY)
         positions.combat  = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY + gap)
         positions.world   = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY + gap*2)
@@ -263,8 +229,8 @@ local function getWindowPositions()
     elseif isTablet then
         local leftX = uiConfig.sideMargin
         local rightX = screenWidth - uiConfig.windowWidth - uiConfig.sideMargin
-        local baseY = 50
-        local gap = uiConfig.windowSpacingY + 30
+        local baseY = 40
+        local gap = uiConfig.windowSpacingY + 20
         positions.main    = UDim2.new(0, leftX, 0, baseY)
         positions.combat  = UDim2.new(0, leftX, 0, baseY + gap)
         positions.world   = UDim2.new(0, leftX, 0, baseY + gap*2)
@@ -274,12 +240,12 @@ local function getWindowPositions()
         positions.teleport= UDim2.new(0, rightX, 0, baseY + gap*3)
     else
         positions.main    = UDim2.new(0, 20, 0, 80)
-        positions.combat  = UDim2.new(0, 280, 0, 80)
-        positions.world   = UDim2.new(0, 540, 0, 80)
-        positions.player  = UDim2.new(0, 800, 0, 80)
-        positions.visual  = UDim2.new(0, 280, 0, 380)
-        positions.utility = UDim2.new(0, 540, 0, 380)
-        positions.teleport= UDim2.new(0, 800, 0, 380)
+        positions.combat  = UDim2.new(0, 270, 0, 80)
+        positions.world   = UDim2.new(0, 520, 0, 80)
+        positions.player  = UDim2.new(0, 770, 0, 80)
+        positions.visual  = UDim2.new(0, 270, 0, 370)
+        positions.utility = UDim2.new(0, 520, 0, 370)
+        positions.teleport= UDim2.new(0, 770, 0, 370)
     end
     return positions
 end
@@ -299,8 +265,8 @@ local COLORS = {
 local function Notify(title, message, duration)
     duration = duration or 2; message = message or ""
     local frame = Instance.new("Frame", gui)
-    frame.Size = UDim2.new(0, math.min(220, screenWidth - 30), 0, 60)
-    frame.Position = UDim2.new(0, 15, 1, -75)
+    frame.Size = UDim2.new(0, math.min(200, screenWidth - 30), 0, 50)
+    frame.Position = UDim2.new(0, 10, 1, -65)
     frame.BackgroundColor3 = COLORS.Button
     frame.BorderSizePixel = 0
     frame.ZIndex = 100
@@ -320,7 +286,7 @@ end
 
 local arrayWindow = Instance.new("Frame", gui)
 arrayWindow.Position = UDim2.new(1, -uiConfig.windowWidth - 5, 0, 40)
-arrayWindow.Size = UDim2.new(0, uiConfig.windowWidth, 0, 300)
+arrayWindow.Size = UDim2.new(0, uiConfig.windowWidth, 0, 280)
 arrayWindow.BackgroundColor3 = COLORS.Window
 arrayWindow.BorderSizePixel = 0
 arrayWindow.Visible = false
@@ -415,7 +381,7 @@ local function CreateWindow(title, pos)
     
     local titleLabel = Instance.new("TextLabel", header)
     titleLabel.Size = UDim2.new(0.75, 0, 1, 0)
-    titleLabel.Position = UDim2.new(0, 15, 0, 0)
+    titleLabel.Position = UDim2.new(0, 10, 0, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title
     titleLabel.TextColor3 = COLORS.Text
@@ -424,8 +390,8 @@ local function CreateWindow(title, pos)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     
     local expandBtn = Instance.new("TextButton", header)
-    expandBtn.Size = UDim2.new(0, 35, 1, 0)
-    expandBtn.Position = UDim2.new(1, -35, 0, 0)
+    expandBtn.Size = UDim2.new(0, 30, 1, 0)
+    expandBtn.Position = UDim2.new(1, -30, 0, 0)
     expandBtn.BackgroundTransparency = 1
     expandBtn.Text = "v"
     expandBtn.TextColor3 = COLORS.Text
@@ -519,9 +485,9 @@ end
 
 local function Section(parent, text)
     local label = Instance.new("TextLabel", parent)
-    label.Size = UDim2.new(0.95, 0, 0, 20)
+    label.Size = UDim2.new(0.95, 0, 0, 18)
     label.BackgroundTransparency = 1
-    label.Text = "— "..text.." —"
+    label.Text = text
     label.TextColor3 = Color3.fromRGB(120,140,200)
     label.Font = Enum.Font.GothamBold
     label.TextSize = uiConfig.smallTextSize
@@ -572,7 +538,7 @@ local function Dropdown(parent, text)
     local open = false
     local function update()
         if open then
-            local size = math.min(layout.AbsoluteContentSize.Y + 12, 200)
+            local size = math.min(layout.AbsoluteContentSize.Y + 12, 180)
             innerContent.Size = UDim2.new(1, 0, 0, size)
             contentScroll.CanvasSize = UDim2.new(0, 0, 0, size)
             content.Size = UDim2.new(1, 0, 0, size)
@@ -599,8 +565,8 @@ local function Slider(parent, text, min, max, default, step, callback)
     holder.BorderSizePixel = 0
     Instance.new("UICorner", holder).CornerRadius = UDim.new(0, uiConfig.cornerRadius)
     local label = Instance.new("TextLabel", holder)
-    label.Position = UDim2.new(0, 8, 0, 3)
-    label.Size = UDim2.new(1, -16, 0, 18)
+    label.Position = UDim2.new(0, 6, 0, 2)
+    label.Size = UDim2.new(1, -12, 0, 16)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.GothamBold
     label.TextSize = uiConfig.smallTextSize
@@ -608,8 +574,8 @@ local function Slider(parent, text, min, max, default, step, callback)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Text = text.." : "..tostring(default)
     local bar = Instance.new("TextButton", holder)
-    bar.Position = UDim2.new(0, 8, 0, 26)
-    bar.Size = UDim2.new(1, -16, 0, 14)
+    bar.Position = UDim2.new(0, 6, 0, 22)
+    bar.Size = UDim2.new(1, -12, 0, 12)
     bar.BackgroundColor3 = Color3.fromRGB(45,65,120)
     bar.BorderSizePixel = 0
     bar.Text = ""
@@ -622,23 +588,23 @@ local function Slider(parent, text, min, max, default, step, callback)
     fill.Active = false
     Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
     local decBtn = Instance.new("TextButton", holder)
-    decBtn.Size = UDim2.new(0, 30, 0, 22)
-    decBtn.Position = UDim2.new(0, 8, 0, 44)
+    decBtn.Size = UDim2.new(0, 28, 0, 20)
+    decBtn.Position = UDim2.new(0, 6, 0, 38)
     decBtn.BackgroundColor3 = Color3.fromRGB(40,55,100)
     decBtn.Text = "-"
     decBtn.TextColor3 = COLORS.Text
     decBtn.Font = Enum.Font.GothamBold
-    decBtn.TextSize = 16
+    decBtn.TextSize = 14
     decBtn.BorderSizePixel = 0
     Instance.new("UICorner", decBtn).CornerRadius = UDim.new(0, uiConfig.cornerRadius/2)
     local incBtn = Instance.new("TextButton", holder)
-    incBtn.Size = UDim2.new(0, 30, 0, 22)
-    incBtn.Position = UDim2.new(0, 42, 0, 44)
+    incBtn.Size = UDim2.new(0, 28, 0, 20)
+    incBtn.Position = UDim2.new(0, 38, 0, 38)
     incBtn.BackgroundColor3 = Color3.fromRGB(40,55,100)
     incBtn.Text = "+"
     incBtn.TextColor3 = COLORS.Text
     incBtn.Font = Enum.Font.GothamBold
-    incBtn.TextSize = 16
+    incBtn.TextSize = 14
     incBtn.BorderSizePixel = 0
     Instance.new("UICorner", incBtn).CornerRadius = UDim.new(0, uiConfig.cornerRadius/2)
     local dragging = false
@@ -669,8 +635,6 @@ local function Slider(parent, text, min, max, default, step, callback)
     incBtn.MouseButton1Click:Connect(function() setValue(current + step) end)
     setValue(default)
 end
-
-
 
 local ActiveBulbs = {}
 local activeConnections = {}
@@ -1147,7 +1111,6 @@ local teleportContainer, teleportWindow = CreateWindow("Teleport", windowPositio
 
 mainWindow.Visible = true
 
-
 Section(combatContainer, "Aura & Targeting")
 local auraDrop = Dropdown(combatContainer, "Aura Settings")
 Toggle(auraDrop, "Kill Aura", true, function(v) ka = v; updateCombatHeartbeat() end)
@@ -1173,7 +1136,7 @@ Toggle(scaffoldDrop, "Scaffold", true, function(v)
     else
         scaffoldStart()
     end
-     Notify("NOTICE", "NOT WORKING ON ALL EXECUTORS")
+    Notify("NOTICE", "NOT WORKING ON ALL EXECUTORS")
 end)
 Slider(scaffoldDrop, "Size", 1, 300, 1, 1, function(v) scaffoldSize = v end)
 
@@ -1231,18 +1194,15 @@ end)
 
 local nukerDrop = Dropdown(worldContainer, "Nuker")
 Slider(nukerDrop, "Range", 1, 500, 1, 1, function(v) nukerRange = v end)
-
 Slider(nukerDrop, "Speed", 1, 100, 20, 1, function(v)
     nukerDelay = math.max(0.005, 1.0 - (v - 1) * (0.995 / 99))
 end)
-
 Toggle(nukerDrop, "Auto Nuker Walk", true, function(v)
     nukerAutoWalk = v
     if v then
-        Notify("Nuker", "Auto Nuker Walk ON – nuker follows your movement")
+        Notify("Nuker", "Auto Nuker Walk ON")
     end
 end)
-
 Toggle(nukerDrop, "Nuker", true, function(v)
     nk = v
     if activeThreads["nuker"] then activeThreads["nuker"] = false end
@@ -1257,7 +1217,6 @@ Toggle(nukerDrop, "Nuker", true, function(v)
         nukerLockX, nukerLockY, nukerLockZ = nil, nil, nil
     end
 end)
-
 Toggle(nukerDrop, "Nuker 3x3", true, function(v)
     nk3 = v
     if activeThreads["nuker3"] then activeThreads["nuker3"] = false end
@@ -1272,7 +1231,6 @@ Toggle(nukerDrop, "Nuker 3x3", true, function(v)
         nukerLockX, nukerLockY, nukerLockZ = nil, nil, nil
     end
 end)
-
 Toggle(nukerDrop, "Nuker 5x5", true, function(v)
     nk5 = v
     if activeThreads["nuker5"] then activeThreads["nuker5"] = false end
@@ -1297,14 +1255,11 @@ Toggle(playerContainer, "Auto Eat", true, function(v)
     ae = v
     if activeThreads["ae"] then activeThreads["ae"] = false end
     if not v then return end
-
     activeThreads["ae"] = true
     spawn(function()
         while activeThreads["ae"] do
             pcall(function()
-                if not player.Character or not player.Character:FindFirstChild("SelectedSlot") then
-                    return
-                end
+                if not player.Character or not player.Character:FindFirstChild("SelectedSlot") then return end
                 local slot = player.Character.SelectedSlot.Value
                 local inv = GetInventory()
                 if inv then
@@ -1398,7 +1353,6 @@ Toggle(playerContainer, "Auto Armor", true, function(v)
     if activeThreads["aa"] then activeThreads["aa"] = false end
     if not v then return end
     activeThreads["aa"] = true
-
     spawn(function()
         while activeThreads["aa"] do
             pcall(function()
@@ -1408,7 +1362,6 @@ Toggle(playerContainer, "Auto Armor", true, function(v)
                     [101] = {tier = -1, slot = nil},
                     [100] = {tier = -1, slot = nil}
                 }
-
                 for i = 0, 35 do
                     local name = GetItemNameAtSlot(i)
                     if name then
@@ -1418,7 +1371,6 @@ Toggle(playerContainer, "Auto Armor", true, function(v)
                         elseif string.find(name, "Leggings") then armorSlot = 101
                         elseif string.find(name, "Boots") then armorSlot = 100
                         end
-
                         if armorSlot then
                             local tier = 0
                             for prefix, t in pairs(TIERS) do
@@ -1433,7 +1385,6 @@ Toggle(playerContainer, "Auto Armor", true, function(v)
                         end
                     end
                 end
-
                 for armorId, data in pairs(best) do
                     if data.slot ~= nil then
                         moveitems:InvokeServer(data.slot, armorId, true)
@@ -1456,7 +1407,7 @@ end)
 
 Section(teleportContainer, "Teleport")
 local playerListScrolling = Instance.new("ScrollingFrame", teleportContainer)
-playerListScrolling.Size = UDim2.new(0.95, 0, 0, 200)
+playerListScrolling.Size = UDim2.new(0.95, 0, 0, 180)
 playerListScrolling.BackgroundTransparency = 1
 playerListScrolling.BorderSizePixel = 0
 playerListScrolling.ScrollBarThickness = uiConfig.scrollBarThickness
