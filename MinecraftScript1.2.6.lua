@@ -1654,7 +1654,7 @@ Button(mainContainer, "Close All Windows", function()
     arrayWindow.Visible = false; mainWindow.Visible = true
     Notify("Windows", "Closed")
 end)
-Toggle(mainContainer, "Anti AFK lmao", false, function(v)
+Toggle(mainContainer, "Anti AFK", false, function(v)
     afk = v
     for _, c in ipairs(getconnections(player.Idled)) do if v then c:Disable() else c:Enable() end end
 end)
