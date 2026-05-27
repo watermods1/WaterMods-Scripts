@@ -214,11 +214,67 @@ local function getPlayerCoord()
     return getPlayerCoordFromCharacter()
 end
 
+
+local function buildUIConfig()
+    if deviceType == "Phone" then
+        uiConfig = {
+            windowWidth = 200,               -- very narrow, like the reference
+            headerHeight = 28,
+            buttonHeight = 36,
+            sliderHeight = 54,
+            dropdownItemHeight = 36,
+            fontSize = 13,
+            titleSize = 14,
+            smallTextSize = 11,
+            padding = 5,
+            cornerRadius = 6,
+            scrollBarThickness = 4,
+            windowSpacingY = 6,
+            initialYOffset = 8,
+            sideMargin = 8,
+        }
+    elseif deviceType == "Tablet" then
+        uiConfig = {
+            windowWidth = 220,               -- still narrow
+            headerHeight = 28,
+            buttonHeight = 36,
+            sliderHeight = 54,
+            dropdownItemHeight = 36,
+            fontSize = 13,
+            titleSize = 14,
+            smallTextSize = 11,
+            padding = 5,
+            cornerRadius = 6,
+            scrollBarThickness = 4,
+            windowSpacingY = 8,
+            initialYOffset = 12,
+            sideMargin = 12,
+        }
+    else  -- PC
+        uiConfig = {
+            windowWidth = 240,               -- already small
+            headerHeight = 28,
+            buttonHeight = 36,
+            sliderHeight = 54,
+            dropdownItemHeight = 34,
+            fontSize = 13,
+            titleSize = 14,
+            smallTextSize = 11,
+            padding = 5,
+            cornerRadius = 6,
+            scrollBarThickness = 4,
+            windowSpacingY = 8,
+            initialYOffset = 20,
+            sideMargin = 12,
+        }
+    end
+end
+
 local function getWindowPositions()
     local positions = {}
     if isPhone then
-        local baseY = 40
-        local gap = uiConfig.windowSpacingY + 20
+        local baseY = 36
+        local gap = uiConfig.windowSpacingY + 18   -- tighter
         positions.main    = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY)
         positions.combat  = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY + gap)
         positions.world   = UDim2.new(0.5, -uiConfig.windowWidth/2, 0, baseY + gap*2)
@@ -229,8 +285,8 @@ local function getWindowPositions()
     elseif isTablet then
         local leftX = uiConfig.sideMargin
         local rightX = screenWidth - uiConfig.windowWidth - uiConfig.sideMargin
-        local baseY = 40
-        local gap = uiConfig.windowSpacingY + 20
+        local baseY = 36
+        local gap = uiConfig.windowSpacingY + 18
         positions.main    = UDim2.new(0, leftX, 0, baseY)
         positions.combat  = UDim2.new(0, leftX, 0, baseY + gap)
         positions.world   = UDim2.new(0, leftX, 0, baseY + gap*2)
@@ -239,13 +295,13 @@ local function getWindowPositions()
         positions.utility = UDim2.new(0, rightX, 0, baseY + gap*2)
         positions.teleport= UDim2.new(0, rightX, 0, baseY + gap*3)
     else
-        positions.main    = UDim2.new(0, 20, 0, 80)
-        positions.combat  = UDim2.new(0, 270, 0, 80)
-        positions.world   = UDim2.new(0, 520, 0, 80)
-        positions.player  = UDim2.new(0, 770, 0, 80)
-        positions.visual  = UDim2.new(0, 270, 0, 370)
-        positions.utility = UDim2.new(0, 520, 0, 370)
-        positions.teleport= UDim2.new(0, 770, 0, 370)
+        positions.main    = UDim2.new(0, 20, 0, 70)
+        positions.combat  = UDim2.new(0, 270, 0, 70)
+        positions.world   = UDim2.new(0, 520, 0, 70)
+        positions.player  = UDim2.new(0, 770, 0, 70)
+        positions.visual  = UDim2.new(0, 270, 0, 350)
+        positions.utility = UDim2.new(0, 520, 0, 350)
+        positions.teleport= UDim2.new(0, 770, 0, 350)
     end
     return positions
 end
