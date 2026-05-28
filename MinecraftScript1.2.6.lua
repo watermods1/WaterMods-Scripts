@@ -1,2983 +1,357 @@
--- This script was generated using the MoonVeil Obfuscator v1.4.5 [https://moonveil.cc]
+-- Developer Cheat Panel - for testing client-side vulnerabilities
+-- Run this script in any executor after joining your game.
 
-local vb,Cb,oc,Jb,ob,Db=pairs,type,getmetatable,bit32.bxor
-local ec,G,ja,o_,sb,fc,ea,hc,Ta,jc,qb,va,Ya,Ib,sa,H,Ca,fb,ua,I,Yb;
-Ya={};
-ec=(getfenv());
-sb,sa,qb=(string.char),(string.byte),(bit32 .bxor);
-Yb=function(Dc,Za)
-    local pc,pa,e_,Z;
-    pa={};
-    e_,pc=function(k,lb,a_)
-        pc[lb]=Jb(a_,44307)-Jb(k,22657)
-        return pc[lb]
-    end,{};
-    Z=pc[-7086]or e_(10602,-7086,5270)
-    repeat
-        if Z>-2.2982706766917294*-13300 then
-            if Z<=-1.0775917253461811*-29681 then
-                if(pa[1]>=0 and pa[2]>pa[3])or((pa[1]<0 or pa[1]~=pa[1])and pa[2]<pa[3])then
-                    Z=13404-1656
-                else
-                    Z=-346602184/-16972
-                end
-            else
-                pa[4]=pa[2]
-                if pa[3]~=pa[3]then
-                    Z=6348+5400
-                else
-                    Z=4273- -27711
-                end
-            end
-        elseif Z<=15757+4665 then
-            if Z<=-387001290/-21113 then
-                if Z<=-2302608/-196 then
-                    return pa[5]
-                else
-                    pa[5]='';
-                    pa[3],pa[2],pa[1],Z=(#Dc-(15100-15099))+(-8116- -8160),-5533- -5577,1,pc[-11988]or e_(48258,-11988,96568)
-                end
-            else
-                pa[5],Z=pa[5]..sb(qb(sa(Dc,(pa[4]-0.012884333821376281*3415)+(-6173+6174)),sa(Za,(pa[4]-(8556-8512))%#Za+(25305+-25304)))),pc[-838]or e_(35365,-838,124696)
-            end
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local env = getsenv(player.PlayerScripts.MainLocalScript)
+
+-- Store original functions/variables so toggles can restore them
+local originalDamage = env.reqDamage
+local originalBeginBreaking = env.beginBreakingBlock
+local originalAttemptPlace = env.attemptPlace
+local originalUpdateDurability = env.updateG_Durability
+local originalAttackInvoke = env.game.ReplicatedStorage.GameRemotes.Attack.InvokeServer
+
+-- Helper to create a toggle button with a label
+local function createToggle(parent, name, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -10, 0, 30)
+    frame.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    frame.Parent = parent
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.7, 0, 1, 0)
+    label.Position = UDim2.new(0, 5, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Font = Enum.Font.SourceSans
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.25, 0, 0.8, 0)
+    btn.Position = UDim2.new(0.75, -5, 0.1, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    btn.Text = "OFF"
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 14
+    btn.Parent = frame
+
+    local enabled = false
+    btn.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        if enabled then
+            btn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+            btn.Text = "ON"
         else
-            pa[2]=pa[2]+pa[1];
-            pa[4]=pa[2]
-            if pa[2]~=pa[2]then
-                Z=40618-28870
-            else
-                Z=16388+15596
-            end
+            btn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+            btn.Text = "OFF"
         end
-    until Z==38691-23716
-end;
-ea=(select);
-H=(function(...)
-    return{[1]={...},[2]=ea('#',...)}
-end);
-jc=((function()
-    local function J(ib,Gc,Eb)
-        if Gc>Eb then
-            return
-        end
-        return ib[Gc],J(ib,Gc+1,Eb)
+        callback(enabled)
+    end)
+    return frame
+end
+
+-- Build the GUI
+local screen = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screen.Name = "DevCheats"
+
+local main = Instance.new("Frame", screen)
+main.Size = UDim2.new(0, 220, 0, 400)
+main.Position = UDim2.new(0.5, -110, 0.5, -200)
+main.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+main.BorderSizePixel = 0
+
+-- Make the window draggable (simple)
+local dragging, dragStart, startPos
+main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
     end
-    return J
-end)());
-fc,o_=(string.gsub),(string.char);
-Ta=(function(kc)
-    kc=fc(kc,'[^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=]','')
-    return(kc:gsub('.',function(xb)
-        if(xb=='=')then
-            return''
-        end
-        local ic,r_='',(('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'):find(xb)-1)
-        for _c=6,1,-1 do
-            ic=ic..(r_%2^_c-r_%2^(_c-1)>0 and'1'or'0')
-        end
-        return ic
-    end):gsub('%d%d%d?%d?%d?%d?%d?%d?',function(t_)
-        if(#t_~=8)then
-            return''
-        end
-        local uc=0
-        for S=1,8 do
-            uc=uc+(t_:sub(S,S)=='1'and 2^(8-S)or 0)
-        end
-        return o_(uc)
-    end))
-end);
-ua,hc,G,fb,ja,Ca,Ib,I=ec[Yb('m\21\135w\15\146','\30a\245')][Yb('\209&\2\197+\25','\164Hr')],ec[Yb('Fo\159\\u\138','5\27\237')][Yb('\r\v\28','~')],ec[Yb('a8\184{\"\173','\18L\202')][Yb('j\198|\218','\b\191')],ec[Yb('\28*\npL','~C')][Yb('\190\203%\187\222\57','\210\184M')],ec[Yb('\29\18\vHM','\127{')][Yb('\"\169u9\188i','P\218\29')],ec[Yb('\\\141J\215\f','>\228')][Yb(',A D','N ')],ec[Yb('\156\216\138\213\141','\232\185')][Yb('\251\157\55\251\147-','\152\242Y')],{};
-va=(function(Bb)
-    local c=I[Bb]
-    if c then
-        return c
-    end
-    local b_,V,l_,ac,Mb=fb(29962/29962,-0.0029411764705882353*-3740),fb(-11246- -11247,0.00026346295710823057*18978),-23736/-23736,{},''
-    while l_<=#Bb do
-        local Ma=G(Bb,l_);
-        l_=l_+-5.086211281216622e-05*-19661
-        for ba=21848+-21830,(0.00036062026685899749*22184)+-0.00067471027147166212*-25196 do
-            local F=nil
-            if Ca(Ma,-28953+28954)~=0 then
-                if l_<=#Bb then
-                    F=hc(Bb,l_,l_);
-                    l_=l_+(19236+-19235)
-                end
-            else
-                if l_+3.2031775521317146e-05*31219<=#Bb then
-                    local da=ua(Yb('k\28g','U'),Bb,l_);
-                    l_=l_+(-21769+21771)
-                    local ta,Oa=#Mb-ja(da,6453-6448),Ca(da,(V-(-14703+14704)))+-9.4849663283695342e-05*-31629;
-                    F=hc(Mb,ta,ta+Oa- -26151/-26151)
-                end
-            end
-            Ma=ja(Ma,4184+-4183)
-            if not(F)then
-            else
-                ac[#ac+(-1330- -1331)]=F;
-                Mb=hc(Mb..F,-b_)
-            end
-        end
-    end
-    local O=Ib(ac);
-    I[Bb]=O
-    return O
 end)
-local Ra,Sb,h,Wb,Fb,rc,w_,T,K,za,Xa,Ob,Nb,nc,sc,qc,wa,Tb,y,p,mb,U,bb,ub,ca,Na,Wa,s_,Rb,La=ec[Yb('\180\193\176\221','\192\184')],ec[Yb('\219U\202Z\199','\171\54')],ec[Yb('\183\147\160\142\160','\210\225')],ec[Yb('\142\6\132\134\151\v\143\129','\250i\234\243')],ec[Yb('z%T~$S',"\27V\'")],ec[Yb('\217i\191\207o\167','\170\f\211')],ec[Yb('\225&\192%\157\249\243\55\213*\148\232','\146C\180H\248\141')],ec[Yb("\14\'\57\20=,",'}SK')][Yb("\t\246\'\2\248!",'o\153U')],ec[Yb('Ma\197W{\208','>\21\183')][Yb('>X\243*U\232','K6\131')],ec[Yb('\25\4$\3\30\49','jpV')][Yb('\253\251\236','\142')],ec[Yb('#\210X9\200M','P\166*')][Yb('N\249X\229',',\128')],ec[Yb('\30U\31\4O\n','m!m')][Yb('\246\233\244\243','\149\129')],ec[Yb('^5H8O','*T')][Yb('\210\6\201\f','\191i')],ec[Yb('\31\25\t\20\14','kx')][Yb('\129\145\146\155','\241\240')],ec[Yb('\250f\236k\235','\142\a')][Yb('\a\"u\5$u','dP\16')],ec[Yb('A\253W\240P','5\156')][Yb('W/\\[3[','>A/')],ec[Yb('V\t@\4G','\"h')][Yb('1\f\177\49\2\171','Rc\223')],ec[Yb('\204\f\249\6\218\23\226\a\202','\175c\139i')][Yb('\208>\218\210\56\218','\179L\191')],ec[Yb('@q\n\203Vj\17\202F','#\30x\164')][Yb('+h7m6','R\1')],ec[Yb('b\"\50\202t9)\203d','\1M@\165')][Yb('I\236\52N\228\"',';\137G')],ec[Yb('\252\4\164^\234\31\191_\250','\159k\214\49')][Yb('\141\244\129\235\139','\238\152')],ec[Yb('sOjrOpb','\20*\30')],ec[Yb('V#@y\6','4J')][Yb('{vk','\25')],ec[Yb('=0+jm','_Y')][Yb('3\132>\142','Q\252')],ec[Yb('\193\130\215\216\145','\163\235')][Yb('\20\14\24\v','vo')],ec[Yb('\176\213\166\143\224','\210\188')][Yb("1m6j\'",'S\25')],ec[Yb('3w%-c','Q\30')][Yb('\208\133)\203\144\53','\162\246A')],ec[Yb('\27.\rtK','yG')][Yb('\14\197\0\v\208\28','b\182h')],ec[Yb('\139O\157\21\219','\233&')][Yb('\181\150\135\162\143\144\164','\208\238\243')],{[-73288510/-8207]={},[28945- -3637]={{-1796- -1806,-15905/-15905,false},{-0.0001364815067558346*-7327,-9869+9872,true},{-77735/-11105,11636-11626,false},{-12556- -12562,-148644/-16516,false},{106190/15170,-15145+15155,false},{109907/15701,-12769- -12778,true},{-147060/-14706,0,false},{-0.00017855229796807484*-28003,50652/16884,false},{16298-16293,0,false},{0.00024274790629930817*24717,-29888+29889,false},{13271-13270,220030/22003,false},{-187080/-31180,-4640- -4643,false},{13877-13867,-3006- -3007,false},{-0.00042196636325275786*-16589,-0.00051008841532532308*-17644,false},{0.020242914979757085*247,61176/7647,true},{-27068+27073,-0.00076248570339306138*-2623,true},{-6988- -6995,0,false},{21322/3046,32378-32368,true},{25769+-25763,30795-30793,true},{0.00021431633090441491*32662,0,true},{-32288/-8072,40128/10032,false},{12985+-12979,0,true},{5776-5769,-0.00025410808063696424*-23612,true},{-125470/-25094,-31230+31240,false},{-26728+26734,24609-24606,false},{12590/1259,217000/21700,false},{30188/7547,-7.0851636672807143e-05*-28228,true},{-9485/-1897,-153800/-15380,false},{-28057+28058,5858-5855,true},{-74- -84,-8462- -8472,true},{-173646/-28941,211088/26386,true},{0.000377814719661478*13234,5821-5820,false},{-129330/-12933,-31176- -31184,true},{30852+-30842,9393+-9384,false},{0.00036584473549425625*27334,0,true},{-8304/-1384,-4063- -4064,true},{-190813/-27259,165224/20653,false},{24776-24775,-18693+18695,false},{0.00043451811940557923*23014,0,true},{-75516/-12586,9286-9282,false},{11989+-11985,-0.00082530949105914721*-7270,true},{21092-21087,112008/14001,true},{13095-13090,231490/23149,false},{-4.3519888589085215e-05*-22978,0,true},{0.00048104675774485281*20788,-2391- -2399,false},{2351+-2346,-17780/-17780,false},{-30763- -30768,16515-16514,false},{24460+-24455,-10970+10973,true},{-32264+32269,-8.2966896208412839e-05*-12053,false},{3934-3928,-27519+27522,false},{799-794,19751-19741,false},{-31421+31427,31432-31428,false},{-23335- -23345,96780/32260,true},{-7759+7764,-5827+5837,false},{0.0026795284030010718*1866,-3365+3375,false},{-17518+17519,-2384+2394,true},{-0.00038580246913580245*-10368,-25530- -25539,true},{-13118- -13124,4418-4416,true},{-20815+20825,30141-30131,true},{-0.00027432691930869615*-25517,12764+-12762,false},{-27400+27410,8.9774665589370685e-05*11139,true},{0.0009119095385737735*5483,-11087- -11097,false},{-19441+19445,-0.0012396694214876034*-4840,true},{-4.7341760166642997e-05*-21123,31908-31898,false},{195240/19524,-12707- -12716,true},{-6009- -6014,4989+-4985,false},{-29680+29690,-14883+14893,false},{-74739/-10677,21325-21318,false},{-8448+8453,-9478- -9480,true},{1891-1881,-101356/-25339,false},{2195+-2189,237456/29682,true},{-0.00015313349412350216*-26121,273123/30347,false},{-21827- -21837,0.00095347063310450035*10488,false},{-12012+12022,-0.00025631988721924964*-31211,false},{-1259+1265,1080-1074,false},{159330/26555,284868/31652,false},{8494+-8487,42202/21101,false},{24300-24293,27093-27091,false},{-16633- -16638,0,false},{19800/3960,8348+-8338,false},{-103270/-20654,-14659- -14661,false},{-14808+14818,68652/17163,true},{-22942- -22947,-13997- -14007,false},{7.9082641360221428e-05*12645,-4810- -4818,false},{15479+-15472,0,false},{0.030211480362537766*331,-0.00032230339492909325*-18616,true},{0.00023273133494693726*21484,-0.0013904338153503894*-7192,false},{5305+-5300,0.00068436901177114698*14612,false},{-32276- -32286,0.00041970956098379922*23826,false},{-0.00016510368511425176*-30284,-273440/-27344,false},{0.00019548813387027409*25577,80490/8049,true},{-30301- -30305,18234-18232,false},{-19937+19944,49392/16464,true},{17652+-17647,-32616- -32626,false},{-13493- -13500,10529+-10520,false},{-0.00015408914056781847*-25959,0.00049917635900763736*20033,false},{9206+-9199,17777+-17771,false},{15976-15966,11880+-11870,false},{21744+-21739,12554+-12553,false},{-0.00016252234682268812*-30765,-22587+22596,true},{0.0079239302694136295*631,-0.00023168706800015445*-25897,false},{-3283- -3284,-9.1717875813996145e-05*-21806,true},{-894/-894,1645+-1643,false},{235-225,0.00022348033373063169*13424,true},{-15179- -15189,0,false},{24776+-24775,-35304/-11768,true},{-20746- -20747,182450/18245,false},{14764-14759,-17485+17495,false},{-18242- -18247,22606+-22596,false},{0.00043451811940557923*11507,6930/693,false},{10420/10420,-99693/-11077,false},{0.00015984654731457802*25024,129128/16141,true},{-51996/-7428,-31370/-15685,true},{-8886/-1481,-23937+23939,false},{11012-11007,-128880/-12888,false},{-24102- -24112,10607-10603,true},{-0.00058962264150943394*-8480,-111861/-12429,true},{10729+-10719,-0.00044793947839936294*-20092,true},{-0.00042009746261132585*-11902,-330/-165,true},{5501+-5496,-4895- -4905,false},{-0.00049719087157559783*-20113,-199130/-19913,true},{26753+-26748,21022-21020,true},{4318+-4313,-31548+31549,false},{-209550/-20955,-20283+20293,false},{-23427+23432,4.1571398877572233e-05*24055,true},{0.00021658415841584159*32320,129-126,false},{0.0069686411149825784*574,-12320+12321,true},{-21729/-21729,-0.0003916001762200793*-20429,true},{3320/3320,267560/26756,false},{165536/23648,1742-1733,true},{-0.0023713540431586438*-4217,6349+-6341,false},{-0.00025559758715877721*-19562,30096+-30086,false},{81450/13575,28008+-27998,false},{-30004- -30014,283200/28320,false},{-13763+13769,12615+-12612,true},{-42352/-10588,5359-5356,true},{-24575- -24580,-51924/-25962,true},{-0.0012169680111265646*-5752,30697/30697,true},{-19071+19075,17890+-17884,true},{25172+-25166,16046-16036,true},{-236700/-23670,29318-29312,false},{-0.001014786894752102*-6898,-16969- -16979,true},{9194-9188,-23814+23820,true},{12721+-12714,16571-16562,true},{-671- -678,0.00026438415017019729*30259,false},{-0.0011415525114155251*-4380,-242920/-24292,false},{-30982+30987,-52654/-26327,true},{-0.00020269585486976791*-29601,3489+-3488,false},{11101-11091,20747-20745,false},{43659/6237,-30996+30999,false},{-25317- -25327,-31428- -31430,true},{-25046+25050,-0.0012417218543046358*-2416,true},{-118380/-23676,-0.0020044097013429546*-4989,false},{5064-5058,0,false},{-0.00030185945423810673*-16564,8.0899603591942404e-05*12361,false},{-163040/-32608,-29577- -29586,false},{14595+-14590,970/194,false},{6445-6438,0.0044776119402985077*2010,true},{25050-25040,-26253+26263,false},{-0.00038822889975929806*-12879,0.00073583517292126564*5436,false},{2350/470,-129640/-12964,true},{1150+-1140,-11423+11426,true},{-17610- -17620,-12058+12066,false},{0.00084373945325683433*5926,-5814- -5815,true},{29923+-29918,-18322+18332,true},{-31991+31997,-20105- -20111,false},{26218-26212,-9.503595526974372e-05*-31567,false},{-0.0003206053028117085*-31191,0,false},{-8017- -8022,24470+-24462,false},{32199-32194,9143+-9133,false},{0.00083070277454726704*6019,9897-9887,false},{-31716+31720,0.0020423793719683433*3917,false},{16372+-16367,21724-21722,true},{19980-19979,0.002357795461243737*3393,true},{7472+-7462,22587+-22577,true},{0.001557632398753894*3852,209750/20975,true},{14023-14016,-20159- -20161,false},{27856+-27852,0,false},{30218+-30208,0.0002952755905511811*30480,true},{10760-10754,-0.0019097636667462401*-4189,true},{83610/8361,21384+-21374,false},{540/135,-15316+15318,true},{-120676/-30169,4562+-4560,true},{129088/32272,29294+-29293,false},{0.00046392948271862676*12933,86418/9602,true},{-68684/-9812,141256/17657,true},{-0.0001984363217843394*-25197,9159+-9149,false},{-0.00041492054271606988*-24101,8513-8503,false},{-0.00031288132411376365*-31961,-20141+20143,false},{13655+-13648,-24981- -24989,true},{-0.00069954529555788739*-14295,98970/9897,true},{-145160/-14516,-0.00040708324852432322*-9826,true},{-86110/-17222,-9694- -9704,false},{11482+-11472,0.001210800339024095*8259,true},{0.0023435669088352471*4267,91560/9156,false},{0.00060642813826561554*6596,21844-21841,true},{29285-29281,0,true},{0.00020837674515524068*23995,-13722+13732,false},{65172/10862,-0.0015064778547755348*-6638,true},{26567+-26560,-5742- -5750,true},{-0.00015378463999015778*-32513,-20442- -20444,false},{-125570/-12557,9517/9517,false},{-0.00035985461873403146*-27789,-10335- -10339,true},{0.00024126616483304382*20724,26316-26306,false},{15840+-15830,-21885- -21895,false},{-85045/-17009,26454+-26444,false},{-8528/-8528,20654/20654,true},{-9853+9858,0.00035228633833579931*28386,false},{-160850/-32170,-32566+32576,false},{0.00031315566968339963*31933,-12254- -12262,false},{13165-13160,-0.00034033284552292142*-29383,false},{-0.00031270521279589731*-31979,-21314+21324,false},{-137170/-27434,-0.00010811979673478214*-27747,false},{28096+-28086,19847+-19838,false},{-27946+27951,-122552/-30638,false},{-32100- -32110,5647+-5646,false},{223244/31892,0,false},{31898-31893,0.00055020632737276477*18175,false},{15915+-15908,15909+-15899,false},{0.0033605376860297649*2083,-0.00011438375750643409*-17485,false},{0.00031454453950679415*15896,-8100- -8105,false},{61065/12213,8290/829,false},{-0.00042709490048688817*-23414,0,true},{20125+-20115,-0.00061919504643962852*-4845,true},{-0.0010583130489998942*-9449,-78372/-8708,false},{-168273/-24039,-29059+29069,false},{3.1277367696734645e-05*31972,30375-30372,false},{-0.00012951690195570523*-7721,0,false},{-5.2080620800999951e-05*-19201,0,true},{-17185- -17190,-4267+4268,false},{-9040+9041,0.00011184431271669836*8941,true},{0.00017031132910961237*29358,-1473- -1475,true},{-89030/-17806,-15510/-1551,false},{13404-13403,-75480/-9435,false},{64020/12804,-173/-173,false},{-9305- -9315,9.0138813773210747e-05*11094,false},{447-442,-35416/-17708,true},{31398-31397,-6.3682098961981789e-05*-31406,true},{7220-7215,123430/12343,false},{-125325/-25065,-0.00040199388969287667*-24876,false},{-31061+31062,-19737/-6579,true},{98395/19679,0.0010416666666666667*7680,false},{29131+-29125,-5998+6008,true},{-14515+14521,-0.00018764073054791094*-15988,false},{183360/30560,-31743- -31752,true},{66580/16645,-24174/-4029,false},{20505-20499,-27761+27770,false},{-26746- -26756,-38350/-3835,true},{-0.0018789928598271326*-2661,-0.00016420361247947455*-24360,false},{16110+-16103,-1917+1926,true},{-14244+14249,84612/14102,true},{-0.00017632330641464188*-28357,0.0002056625762665387*14587,true},{-7738/-7738,-235270/-23527,false},{25298/25298,9584+-9583,false},{8810-8800,-3555- -3559,false},{22030+-22023,-16141/-16141,false}},[-4978+25713]={}}
-local na=(function(X)
-    local ga=La[8930][X]
-    if ga then
-        return ga
+main.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
-    local wc=1
-    local function N()
-        local gb,tb,ab,Ea,i_,Aa,nb,eb,wb,Qa,Ka,Sa,E,Fc,yc,Da,Ac,Y,Xb,u_,Pa,xc,Q,Kb,ma,vc,d_,g,la,Pb,Cc,tc;
-        Y,Cc=function(j,dc,x)
-            Cc[x]=Jb(j,52220)-Jb(dc,44488)
-            return Cc[x]
-        end,{};
-        tb=Cc[-1899]or Y(2541,35046,-1899)
-        repeat
-            if tb>=34188 then
-                if tb>53338 then
-                    if tb<58672 then
-                        if tb<=57346 then
-                            if tb>=54989 then
-                                if tb>=56340 then
-                                    if tb>56792 then
-                                        u_=u_+Aa;
-                                        xc=u_
-                                        if u_~=u_ then
-                                            tb=Cc[6892]or Y(27500,45660,6892)
-                                        else
-                                            tb=63558
-                                        end
-                                    elseif tb<=56340 then
-                                        wb=wb+Ea;
-                                        Q=wb
-                                        if wb~=wb then
-                                            tb=35306
-                                        else
-                                            tb=Cc[-9629]or Y(123268,23529,-9629)
-                                        end
-                                    else
-                                        g=K(Yb('\182\238','\138'),X,wc);
-                                        tb,wc=63948,wc+8
-                                    end
-                                elseif tb<=54989 then
-                                    gb[40045],tb=Rb(gb[42517],0,16),Cc[1045]or Y(8626,41970,1045)
-                                else
-                                    Q=K(Yb('\249\140\241','\197'),X,wc);
-                                    wc,tb=wc+4,44491
-                                end
-                            elseif tb<=54501 then
-                                if tb<=54041 then
-                                    if tb<=53639 then
-                                        Da,tb=H(ub(g,-963417823)),Cc[17700]or Y(118592,29962,17700)
-                                        continue
-                                    else
-                                        Pb=Ac
-                                        if Qa~=Qa then
-                                            tb=Cc[-30383]or Y(119608,39645,-30383)
-                                        else
-                                            tb=Cc[324]or Y(48304,46994,324)
-                                        end
-                                    end
-                                else
-                                    tb,Da=36933,H''
-                                    continue
-                                end
-                            else
-                                tb,u_=1662,nil
-                            end
-                        elseif tb<58021 then
-                            if tb>=57775 then
-                                if tb>57775 then
-                                    tb,Qa=Cc[-11436]or Y(119845,10030,-11436),ma
-                                else
-                                    la,tb=ub(nb,-963417823),41388
-                                    continue
-                                end
-                            elseif tb<=57509 then
-                                Da=K(Yb(']','\31'),X,wc);
-                                wc,tb=wc+1,38742
-                            else
-                                Pa,tb=nil,Cc[20403]or Y(27316,37010,20403)
-                            end
-                        elseif tb>=58412 then
-                            if tb<=58412 then
-                                tb,gb=45331,nil
-                            else
-                                tb,gb[40045]=Cc[-3988]or Y(84269,2933,-3988),Pa[gb[36987]+1]
-                            end
-                        elseif tb<=58021 then
-                            Ka=u_;
-                            i_[42517]=Ka;
-                            qc(Ac,{});
-                            tb=Cc[-7630]or Y(125523,63732,-7630)
-                        else
-                            Ea=Ea+gb;
-                            Sa=Ea
-                            if Ea~=Ea then
-                                tb=Cc[-5970]or Y(20418,50457,-5970)
-                            else
-                                tb=Cc[-22769]or Y(5014,45284,-22769)
-                            end
-                        end
-                    elseif tb>61680 then
-                        if tb<=63558 then
-                            if tb<=62572 then
-                                if tb<62339 then
-                                    if Sa==5 then
-                                        tb=Cc[-11389]or Y(130387,54557,-11389)
-                                        continue
-                                    end
-                                    tb=Cc[27688]or Y(69263,17559,27688)
-                                elseif tb<=62339 then
-                                    tb,Ea[(yc-85)]=Cc[11610]or Y(123022,27706,11610),N()
-                                else
-                                    yc=Q
-                                    if gb~=gb then
-                                        tb=Cc[-22317]or Y(27678,36222,-22317)
-                                    else
-                                        tb=34188
-                                    end
-                                end
-                            elseif tb>63085 then
-                                if(Aa>=0 and u_>Ka)or((Aa<0 or Aa~=Aa)and u_<Ka)then
-                                    tb=Cc[14628]or Y(101233,4697,14628)
-                                else
-                                    tb=Cc[2439]or Y(6897,27505,2439)
-                                end
-                            else
-                                tb,gb[40045]=Cc[17274]or Y(103610,12026,17274),Pa[gb[60718]+1]
-                            end
-                        elseif tb<=63756 then
-                            if tb>63618 then
-                                i_=g
-                                if i_==0 then
-                                    tb=Cc[11001]or Y(105278,54805,11001)
-                                    continue
-                                else
-                                    tb=Cc[-25724]or Y(112945,4027,-25724)
-                                    continue
-                                end
-                                tb=Cc[30591]or Y(69530,28982,30591)
-                            else
-                                tb,yc=57509,nil
-                            end
-                        else
-                            Da,tb=g,47455
-                            continue
-                        end
-                    elseif tb>=59902 then
-                        if tb>61326 then
-                            if tb>61515 then
-                                tb,Qa=Cc[-23318]or Y(101710,7287,-23318),false
-                            else
-                                gb[40045]=Pa[Rb(gb[42517],0,24)+1];
-                                gb[11985],tb=Rb(gb[42517],31,1)==1,Cc[7376]or Y(124689,64785,7376)
-                            end
-                        elseif tb<60397 then
-                            gb[40045]=Rb(gb[42517],0,1)==1;
-                            tb,gb[11985]=Cc[-7504]or Y(100455,51791,-7504),Rb(gb[42517],31,1)==1
-                        elseif tb>60397 then
-                            ma=0;
-                            Q,gb,tb,Ea=121,1,23079,117
-                        else
-                            wb=Pa;
-                            nb=bb(nb,s_(ca(wb,127),(Pb-234)*7))
-                            if(not Na(wb,128))then
-                                tb=Cc[-16189]or Y(13379,7222,-16189)
-                                continue
-                            else
-                                tb=Cc[30276]or Y(6665,12744,30276)
-                                continue
-                            end
-                            tb=Cc[-6789]or Y(28579,50082,-6789)
-                        end
-                    elseif tb>=59240 then
-                        if tb<=59240 then
-                            tb,g=37318,nil
-                        else
-                            tb=Cc[-6662]or Y(46555,50514,-6662)
-                            continue
-                        end
-                    elseif tb<=58672 then
-                        tc,tb=ub(Fc,2),Cc[-9550]or Y(3579,49469,-9550)
-                        continue
-                    else
-                        Aa=i_
-                        if u_~=u_ then
-                            tb=Cc[15110]or Y(12966,35355,15110)
-                        else
-                            tb=Cc[-16591]or Y(98879,26270,-16591)
-                        end
-                    end
-                elseif tb<42392 then
-                    if tb>37427 then
-                        if tb<38760 then
-                            if tb>38131 then
-                                yc,tb=ub(Da,2),8896
-                                continue
-                            elseif tb>37829 then
-                                Xb=Xb+Pa;
-                                wb=Xb
-                                if Xb~=Xb then
-                                    tb=3887
-                                else
-                                    tb=Cc[-8895]or Y(24721,13863,-8895)
-                                end
-                            elseif tb<=37821 then
-                                tb,yc=Cc[20838]or Y(127008,19840,20838),nil
-                            else
-                                ma,tb=nil,33158
-                            end
-                        elseif tb>=41388 then
-                            if tb<=41388 then
-                                nb=la;
-                                Ac,Qa=sc(nb),false;
-                                tb,Xb,Pb,Pa=52659,141,(nb)+140,1
-                            else
-                                Sa=gb
-                                if(Sa==5)then
-                                    tb=Cc[-32044]or Y(36311,61100,-32044)
-                                    continue
-                                else
-                                    tb=Cc[-25805]or Y(62683,34489,-25805)
-                                    continue
-                                end
-                                tb=Cc[-2762]or Y(20313,34009,-2762)
-                            end
-                        elseif tb>38760 then
-                            tb,Kb=25437,nil
-                        else
-                            if(Ea>=0 and wb>ma)or((Ea<0 or Ea~=Ea)and wb<ma)then
-                                tb=Cc[25541]or Y(27207,46764,25541)
-                            else
-                                tb=58412
-                            end
-                        end
-                    elseif tb<=36084 then
-                        if tb>=35306 then
-                            if tb>35390 then
-                                yc=gb[42517];
-                                Da,g=Wa(yc,30),ca(Wa(yc,20),1023);
-                                gb[40045]=Pa[g+1];
-                                gb[28039]=Da
-                                if Da==2 then
-                                    tb=Cc[-13695]or Y(120476,27114,-13695)
-                                    continue
-                                elseif(Da==3)then
-                                    tb=Cc[-25446]or Y(89290,31320,-25446)
-                                    continue
-                                else
-                                    tb=Cc[13461]or Y(115893,40701,13461)
-                                    continue
-                                end
-                                tb=Cc[22436]or Y(8911,41175,22436)
-                            elseif tb<=35306 then
-                                tb,wb=Cc[1720]or Y(88420,3778,1720),nil
-                            else
-                                Fc=K(Yb('\17','S'),X,wc);
-                                tb,wc=58672,wc+1
-                            end
-                        elseif tb<34391 then
-                            if(Sa>=0 and Q>gb)or((Sa<0 or Sa~=Sa)and Q<gb)then
-                                tb=Cc[4443]or Y(129153,409,4443)
-                            else
-                                tb=Cc[11242]or Y(122401,36754,11242)
-                            end
-                        elseif tb<=34391 then
-                            tb,wb,ma,Ea=Cc[29816]or Y(39173,41387,29816),132,(nb)+131,1
-                        else
-                            return{[25614]='',[33023]=vc,[13683]=Ac,[37927]=Fc,[48065]=E,[42141]=Ea}
-                        end
-                    elseif tb>37318 then
-                        tb,gb[40045]=Cc[26781]or Y(126863,58775,26781),Pa[gb[42517]+1]
-                    elseif tb>36933 then
-                        i_=0;
-                        tb,Aa,Ka,u_=491,1,239,235
-                    elseif tb<=36356 then
-                        ma=wb;
-                        Ea=sc(ma);
-                        Q,Sa,tb,gb=86,1,62572,(ma)+85
-                    else
-                        tb,yc=Cc[15853]or Y(13223,12559,15853),jc(Da[1],1,Da[2])
-                    end
-                elseif tb<47934 then
-                    if tb<44491 then
-                        if tb>43814 then
-                            tb,u_=Cc[-7989]or Y(92320,28031,-7989),ub(Ka,1606039080)
-                            continue
-                        elseif tb<42582 then
-                            if(Sa==2)then
-                                tb=Cc[-12634]or Y(27863,47408,-12634)
-                                continue
-                            else
-                                tb=Cc[7295]or Y(126384,20756,7295)
-                                continue
-                            end
-                            tb=Cc[-23007]or Y(112103,4047,-23007)
-                        elseif tb>42582 then
-                            eb,tb=ub(ab,2),47197
-                            continue
-                        else
-                            Q=Ea;
-                            gb=ca(Q,255);
-                            Sa=La[32582][gb+1];
-                            yc,Da,g=Sa[1],Sa[2],Sa[3];
-                            i_={[24488]=0,[28904]=0,[42971]=gb,[36987]=0,[40045]=0,[21883]=0,[2373]=0,[22087]=nil,[11985]=0,[42517]=0,[30012]=0,[17956]=0,[60718]=0,[28039]=0,[55150]=Da};
-                            qc(Ac,i_)
-                            if(yc==7)then
-                                tb=Cc[-32590]or Y(2317,7787,-32590)
-                                continue
-                            else
-                                tb=Cc[29019]or Y(39681,49036,29019)
-                                continue
-                            end
-                            tb=Cc[16550]or Y(39567,58287,16550)
-                        end
-                    elseif tb<=45331 then
-                        if tb>=44493 then
-                            if tb>44493 then
-                                Sa=K(Yb('c','!'),X,wc);
-                                wc,tb=wc+1,Cc[-625]or Y(218,53846,-625)
-                            else
-                                i_[21883]=ca(Wa(Q,8),255);
-                                i_[2373]=ca(Wa(Q,16),255);
-                                i_[17956],tb=ca(Wa(Q,24),255),Cc[15739]or Y(16649,10785,15739)
-                            end
-                        else
-                            tb,Ea=42582,ub(Q,1606039080)
-                            continue
-                        end
-                    elseif tb<=47197 then
-                        ab=eb;
-                        i_=bb(i_,s_(ca(ab,127),(xc-235)*7))
-                        if not Na(ab,128)then
-                            tb=Cc[2315]or Y(60919,48185,2315)
-                            continue
-                        end
-                        tb=Cc[-11793]or Y(111167,13321,-11793)
-                    else
-                        tb,yc=Cc[25036]or Y(120675,27843,25036),Da
-                    end
-                elseif tb>50755 then
-                    if tb>=52659 then
-                        if tb>52659 then
-                            u_,tb=nil,14633
-                        else
-                            wb=Xb
-                            if Pb~=Pb then
-                                tb=Cc[-7406]or Y(7003,27824,-7406)
-                            else
-                                tb=Cc[21848]or Y(791,5285,21848)
-                            end
-                        end
-                    elseif tb>50884 then
-                        ma,tb=g,Cc[-20096]or Y(125082,60715,-20096)
-                        continue
-                    else
-                        gb=K(Yb('\21','W'),X,wc);
-                        wc,tb=wc+1,Cc[-25608]or Y(36945,38122,-25608)
-                    end
-                elseif tb<=48602 then
-                    if tb<48394 then
-                        if(gb>=0 and Ea>Q)or((gb<0 or gb~=gb)and Ea<Q)then
-                            tb=Cc[-6209]or Y(33329,33704,-6209)
-                        else
-                            tb=63618
-                        end
-                    elseif tb<=48394 then
-                        if Sa==0 then
-                            tb=Cc[3233]or Y(42231,44618,3233)
-                            continue
-                        elseif(Sa==3)then
-                            tb=Cc[20579]or Y(114861,35995,20579)
-                            continue
-                        else
-                            tb=Cc[-12835]or Y(26824,60421,-12835)
-                            continue
-                        end
-                        tb=Cc[-24893]or Y(86994,4562,-24893)
-                    else
-                        gb[40045],tb=Pa[gb[21883]+1],Cc[28981]or Y(88849,6417,28981)
-                    end
-                elseif tb<=49062 then
-                    i_,u_=ca(Wa(yc,10),1023),ca(Wa(yc,0),1023);
-                    gb[24488]=Pa[i_+1];
-                    gb[28904],tb=Pa[u_+1],Cc[11514]or Y(83604,7324,11514)
-                else
-                    E,tb,la=d_,1003,nil
-                end
-            elseif tb<=14510 then
-                if tb>4971 then
-                    if tb<8896 then
-                        if tb>5517 then
-                            if tb>8843 then
-                                xc,tb=nil,Cc[18307]or Y(41529,62857,18307)
-                            elseif tb>7021 then
-                                tb,Q=25509,ub(gb,2)
-                                continue
-                            else
-                                tb,wb=Cc[6941]or Y(26156,45572,6941),ub(ma,-963417823)
-                                continue
-                            end
-                        elseif tb>=5209 then
-                            if tb>5453 then
-                                Xb,tb=ub(Pb,-963417823),26459
-                                continue
-                            elseif tb<=5209 then
-                                xc,tb=ub(eb,2),17641
-                                continue
-                            else
-                                tb,gb[40045]=Cc[-253]or Y(110987,13227,-253),Pa[gb[2373]+1]
-                            end
-                        elseif tb<=5046 then
-                            if Sa==6 then
-                                tb=Cc[29488]or Y(9833,62480,29488)
-                                continue
-                            elseif(Sa==2)then
-                                tb=Cc[-896]or Y(9147,593,-896)
-                                continue
-                            else
-                                tb=Cc[6730]or Y(4934,31255,6730)
-                                continue
-                            end
-                            tb=Cc[7448]or Y(21716,61020,7448)
-                        else
-                            tb=Cc[-7938]or Y(109715,19387,-7938)
-                            continue
-                        end
-                    elseif tb<=12406 then
-                        if tb>=10608 then
-                            if tb<=11258 then
-                                if tb>10608 then
-                                    tb,yc=Cc[-18015]or Y(48251,46651,-18015),jc(Da[1],1,Da[2])
-                                else
-                                    if Sa==8 then
-                                        tb=Cc[25561]or Y(8418,43846,25561)
-                                        continue
-                                    elseif(Sa==9)then
-                                        tb=Cc[12668]or Y(126637,13717,12668)
-                                        continue
-                                    else
-                                        tb=Cc[30543]or Y(115209,57635,30543)
-                                        continue
-                                    end
-                                    tb=Cc[3219]or Y(116572,40260,3219)
-                                end
-                            else
-                                if(Qa)then
-                                    tb=Cc[-10303]or Y(68792,31644,-10303)
-                                    continue
-                                else
-                                    tb=Cc[-3814]or Y(124446,14293,-3814)
-                                    continue
-                                end
-                                tb=Cc[-5298]or Y(126222,15415,-5298)
-                            end
-                        elseif tb<=8896 then
-                            Da=yc;
-                            ma=bb(ma,s_(ca(Da,127),(Sa-117)*7))
-                            if not Na(Da,128)then
-                                tb=Cc[20801]or Y(19025,38761,20801)
-                                continue
-                            end
-                            tb=Cc[-14290]or Y(110465,11409,-14290)
-                        else
-                            i_=i_+Ka;
-                            Aa=i_
-                            if i_~=i_ then
-                                tb=Cc[-4589]or Y(108264,13893,-4589)
-                            else
-                                tb=Cc[-32747]or Y(12088,52127,-32747)
-                            end
-                        end
-                    elseif tb>=13813 then
-                        if tb>13813 then
-                            Da,tb=H(nil),Cc[14860]or Y(70257,24557,14860)
-                        else
-                            Ac=Ac+Xb;
-                            Pb=Ac
-                            if Ac~=Ac then
-                                tb=Cc[-2427]or Y(106095,56876,-2427)
-                            else
-                                tb=23794
-                            end
-                        end
-                    elseif tb>13135 then
-                        if(Ea>=0 and wb>ma)or((Ea<0 or Ea~=Ea)and wb<ma)then
-                            tb=Cc[-5137]or Y(26300,36510,-5137)
-                        else
-                            tb=Cc[30108]or Y(102520,19254,30108)
-                        end
-                    else
-                        tb=Cc[-9239]or Y(8129,44926,-9239)
-                        continue
-                    end
-                elseif tb>=2309 then
-                    if tb<3918 then
-                        if tb>2678 then
-                            tb,Xb=Cc[20499]or Y(114815,21968,20499),nil
-                        elseif tb<2644 then
-                            tb,Da=18271,H(nil)
-                        elseif tb<=2644 then
-                            eb,tb=nil,19411
-                        else
-                            Q=wb
-                            if ma~=ma then
-                                tb=34391
-                            else
-                                tb=38760
-                            end
-                        end
-                    elseif tb<=4484 then
-                        if tb<3966 then
-                            u_,Ka=ca(Wa(Q,8),16777215),nil;
-                            Ka=if u_<8388608 then u_ else u_-16777216;
-                            tb,i_[60718]=Cc[18031]or Y(62461,39229,18031),Ka
-                        elseif tb<=3966 then
-                            if(Pa>=0 and Xb>Pb)or((Pa<0 or Pa~=Pa)and Xb<Pb)then
-                                tb=3887
-                            else
-                                tb=Cc[26011]or Y(5379,833,26011)
-                            end
-                        else
-                            eb=K(Yb(':','x'),X,wc);
-                            tb,wc=5209,wc+1
-                        end
-                    elseif tb>4890 then
-                        Pb=0;
-                        ma,Pa,wb,tb=1,49,53,Cc[-1765]or Y(128386,25579,-1765)
-                    else
-                        wb=wb+Ea;
-                        Q=wb
-                        if wb~=wb then
-                            tb=34391
-                        else
-                            tb=38760
-                        end
-                    end
-                elseif tb<=780 then
-                    if tb<637 then
-                        if tb>219 then
-                            xc=u_
-                            if Ka~=Ka then
-                                tb=Cc[-22151]or Y(113835,23443,-22151)
-                            else
-                                tb=Cc[19226]or Y(93280,670,19226)
-                            end
-                        else
-                            if Sa==0 then
-                                tb=Cc[31992]or Y(21561,15112,31992)
-                                continue
-                            end
-                            tb=Cc[22027]or Y(120171,28363,22027)
-                        end
-                    elseif tb>711 then
-                        if g then
-                            tb=Cc[-23943]or Y(95502,17614,-23943)
-                            continue
-                        end
-                        tb=Cc[20632]or Y(115631,38440,20632)
-                    elseif tb<=637 then
-                        Pa=Pa+ma;
-                        Ea=Pa
-                        if Pa~=Pa then
-                            tb=Cc[30369]or Y(39832,38687,30369)
-                        else
-                            tb=Cc[-30290]or Y(41968,42342,-30290)
-                        end
-                    else
-                        tb,Da=Cc[8431]or Y(128977,62365,8431),nil
-                    end
-                elseif tb<=1195 then
-                    if tb<=1003 then
-                        if tb<=852 then
-                            vc,tb,tc=Kb,Cc[13718]or Y(442,60864,13718),nil
-                        else
-                            nb=0;
-                            Ac,Xb,Qa,tb=234,1,238,54041
-                        end
-                    else
-                        i_[21883]=ca(Wa(Q,8),255);
-                        u_=ca(Wa(Q,16),65535);
-                        i_[30012]=u_;
-                        Ka=nil;
-                        Ka=if u_<32768 then u_ else u_-65536;
-                        i_[36987],tb=Ka,Cc[-20958]or Y(39909,57541,-20958)
-                    end
-                else
-                    Ka=K(Yb('\228\145\236','\216'),X,wc);
-                    wc,tb=wc+4,Cc[25398]or Y(103113,440,25398)
-                end
-            elseif tb<24414 then
-                if tb>19411 then
-                    if tb>23444 then
-                        if tb<23857 then
-                            if(Xb>=0 and Ac>Qa)or((Xb<0 or Xb~=Xb)and Ac<Qa)then
-                                tb=Cc[-6469]or Y(105787,55504,-6469)
-                            else
-                                tb=Cc[-5289]or Y(100552,53204,-5289)
-                            end
-                        elseif tb<=23857 then
-                            E=K(Yb('\27','Y'),X,wc);
-                            wc,tb=wc+1,24186
-                        else
-                            tb,d_=50755,ub(E,2)
-                            continue
-                        end
-                    elseif tb<22846 then
-                        if tb>19905 then
-                            Fc,d_,tb=tc,nil,Cc[-22121]or Y(5593,11580,-22121)
-                        else
-                            tb=Cc[-813]or Y(84843,13088,-813)
-                            continue
-                        end
-                    elseif tb>=23079 then
-                        if tb>23079 then
-                            tb,Pa[(Q-18)]=Cc[-25428]or Y(53516,43550,-25428),yc
-                        else
-                            Sa=Ea
-                            if Q~=Q then
-                                tb=Cc[-13319]or Y(36913,60840,-13319)
-                            else
-                                tb=Cc[-11348]or Y(125000,50622,-11348)
-                            end
-                        end
-                    else
-                        i_=ca(Wa(yc,10),1023);
-                        tb,gb[24488]=Cc[6160]or Y(91468,32596,6160),Pa[i_+1]
-                    end
-                elseif tb>18070 then
-                    if tb<19336 then
-                        if tb>18188 then
-                            g=0;
-                            Ka,tb,i_,u_=1,Cc[9219]or Y(107268,12215,9219),49,53
-                        else
-                            tb=Cc[11277]or Y(45616,62359,11277)
-                            continue
-                        end
-                    elseif tb>19336 then
-                        ab=K(Yb('\141','\207'),X,wc);
-                        wc,tb=wc+1,43814
-                    else
-                        tb,gb=42236,ub(Sa,2)
-                        continue
-                    end
-                elseif tb>16057 then
-                    if tb>17641 then
-                        Q=wb
-                        if ma~=ma then
-                            tb=35306
-                        else
-                            tb=Cc[-28305]or Y(45574,59499,-28305)
-                        end
-                    else
-                        eb=xc;
-                        g=bb(g,s_(ca(eb,127),(Aa-49)*7))
-                        if(not Na(eb,128))then
-                            tb=Cc[28756]or Y(21899,50912,28756)
-                            continue
-                        else
-                            tb=Cc[-19279]or Y(64544,49121,-19279)
-                            continue
-                        end
-                        tb=Cc[-15862]or Y(41894,61295,-15862)
-                    end
-                elseif tb>14633 then
-                    if yc==10 then
-                        tb=Cc[24126]or Y(40708,64901,24126)
-                        continue
-                    elseif yc==5 then
-                        tb=Cc[19006]or Y(8161,35736,19006)
-                        continue
-                    end
-                    tb=Cc[15859]or Y(54746,46802,15859)
-                elseif tb>14513 then
-                    Ka=K(Yb(' ','C')..i_,X,wc);
-                    wc,tb=wc+i_,28981
-                else
-                    tb,Pa=Cc[-13733]or Y(69557,30100,-13733),ub(wb,2)
-                    continue
-                end
-            elseif tb>=27984 then
-                if tb<29830 then
-                    if tb<28763 then
-                        if tb>27984 then
-                            tb,Kb=Cc[16771]or Y(11594,20138,16771),ub(vc,2)
-                            continue
-                        else
-                            tb,Da=36933,H(u_)
-                            continue
-                        end
-                    elseif tb<=28763 then
-                        Ea=Pa
-                        if wb~=wb then
-                            tb=Cc[7706]or Y(5245,25660,7706)
-                        else
-                            tb=24414
-                        end
-                    else
-                        tb,u_=Cc[-9160]or Y(99682,19590,-9160),Ka
-                        continue
-                    end
-                elseif tb>33020 then
-                    if tb<=33071 then
-                        Q,tb=nil,50884
-                    else
-                        Ea,tb=nil,Cc[5279]or Y(121231,38163,5279)
-                    end
-                elseif tb>=32365 then
-                    if tb<=32365 then
-                        if(Ka>=0 and i_>u_)or((Ka<0 or Ka~=Ka)and i_<u_)then
-                            tb=Cc[2844]or Y(14560,35933,2844)
-                        else
-                            tb=Cc[10482]or Y(43108,60612,10482)
-                        end
-                    else
-                        tb,g=Cc[-8082]or Y(69008,24744,-8082),ub(i_,-963417823)
-                        continue
-                    end
-                else
-                    gb=Ac[(Q-131)];
-                    Sa=gb[55150]
-                    if(Sa==7)then
-                        tb=Cc[24225]or Y(109405,51196,24225)
-                        continue
-                    else
-                        tb=Cc[2625]or Y(128926,15106,2625)
-                        continue
-                    end
-                    tb=Cc[-17137]or Y(127811,61795,-17137)
-                end
-            elseif tb>25582 then
-                if tb>=27008 then
-                    if tb>27008 then
-                        gb[40045],tb=Pa[gb[17956]+1],Cc[6442]or Y(86560,4096,6442)
-                    else
-                        Q=Q+Sa;
-                        yc=Q
-                        if Q~=Q then
-                            tb=34604
-                        else
-                            tb=Cc[-13591]or Y(129650,458,-13591)
-                        end
-                    end
-                else
-                    Pb=Xb;
-                    Pa=sc(Pb);
-                    Ea,ma,wb,tb=1,(Pb)+18,19,2678
-                end
-            elseif tb<=25437 then
-                if tb>24935 then
-                    vc=K(Yb('\143','\205'),X,wc);
-                    wc,tb=wc+1,28683
-                elseif tb<=24414 then
-                    if(ma>=0 and Pa>wb)or((ma<0 or ma~=ma)and Pa<wb)then
-                        tb=Cc[-1145]or Y(18087,55814,-1145)
-                    else
-                        tb=33071
-                    end
-                else
-                    if Sa==6 then
-                        tb=Cc[6741]or Y(10793,42688,6741)
-                        continue
-                    elseif Sa==1 then
-                        tb=Cc[28965]or Y(6565,4292,28965)
-                        continue
-                    elseif(Sa==4)then
-                        tb=Cc[-3393]or Y(99448,62193,-3393)
-                        continue
-                    else
-                        tb=Cc[-10837]or Y(112768,11378,-10837)
-                        continue
-                    end
-                    tb=Cc[-14502]or Y(124932,59948,-14502)
-                end
-            elseif tb<=25509 then
-                gb=Q;
-                Pb=bb(Pb,s_(ca(gb,127),(Ea-49)*7))
-                if not Na(gb,128)then
-                    tb=Cc[30829]or Y(86016,7753,30829)
-                    continue
-                end
-                tb=Cc[5966]or Y(36409,61056,5966)
-            else
-                wb=K(Yb('\205','\143'),X,wc);
-                wc,tb=wc+1,Cc[-13738]or Y(26187,55502,-13738)
-            end
-        until tb==38942
-    end
-    local Ha=N();
-    La[8930][X]=Ha
-    return Ha
 end)
-local aa=(function(cb,mc)
-    cb=na(cb)
-    local yb=U()
-    local function cc(oa,Ab)
-        local f_=(function(...)
-            return{...},rc('#',...)
+main.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+title.Text = "Cheat Panel"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 18
+
+local scroll = Instance.new("ScrollingFrame", main)
+scroll.Size = UDim2.new(1, -10, 1, -35)
+scroll.Position = UDim2.new(0, 5, 0, 35)
+scroll.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ScrollBarThickness = 4
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0, 5)
+
+-- Update canvas size automatically
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    scroll.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
+end)
+
+-- ===== Toggles for each cheat =====
+
+-- 1. God Mode (block all damage)
+createToggle(scroll, "God Mode", function(on)
+    if on then env.reqDamage = function() end
+    else env.reqDamage = originalDamage end
+end)
+
+-- 2. Lava/Fire immunity
+createToggle(scroll, "Lava/Fire Immune", function(on)
+    if on then
+        game.ReplicatedStorage.Fire.FireServer = function() end
+    else
+        -- Can't restore original, so just rejoin to disable
+    end
+end)
+
+-- 3. Drowning immunity
+createToggle(scroll, "Drowning Immune", function(on)
+    if on then
+        env.reqDamage = function(amount, dtype)
+            if dtype ~= "drowning" then originalDamage(amount, dtype) end
+        end
+    else
+        env.reqDamage = originalDamage
+    end
+end)
+
+-- 4. Void immunity (also auto-teleport)
+local voidConn
+createToggle(scroll, "Void Immune", function(on)
+    if on then
+        env.reqDamage = function(amount, dtype)
+            if dtype ~= "void" then originalDamage(amount, dtype) end
+        end
+        voidConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if root and root.Position.Y < -100 then
+                root.CFrame = CFrame.new(root.Position.X, 50, root.Position.Z)
+            end
         end)
-        local z;
-        z=(function(ha,D,Lb)
-            if D>Lb then
-                return
-            end
-            return ha[D],z(ha,D+1,Lb)
-        end)
-        local function P(rb,M,R,W)
-            local Ub,ra,zb,Vb,xa,ya,qa,v,Bc,hb,jb,ia,L,n_,db,Fa,Ja,zc,bc,Ec,Ga,Zb,q,Qb;
-            Qb,Ub={},function(gc,Va,A)
-                Qb[Va]=Jb(gc,58526)-Jb(A,19677)
-                return Qb[Va]
-            end;
-            Bc=Qb[2241]or Ub(123923,2241,17622)
-            while Bc~=55911 do
-                if Bc<=31998 then
-                    if Bc<=16090 then
-                        if Bc>7091 then
-                            if Bc<=10842 then
-                                if Bc>=8919 then
-                                    if Bc>=9747 then
-                                        if Bc<10637 then
-                                            if Bc<=9747 then
-                                                ia=ia+n_;
-                                                bc=ia
-                                                if ia~=ia then
-                                                    Bc=Qb[-27396]or Ub(13685,-27396,59856)
-                                                else
-                                                    Bc=20726
-                                                end
-                                            else
-                                                if(jb>178)then
-                                                    Bc=Qb[8283]or Ub(3961,8283,54055)
-                                                    continue
-                                                else
-                                                    Bc=Qb[-8580]or Ub(4374,-8580,20665)
-                                                    continue
-                                                end
-                                                Bc=Qb[-8823]or Ub(13297,-8823,49983)
-                                            end
-                                        elseif Bc<10718 then
-                                            if(jb>119)then
-                                                Bc=Qb[30014]or Ub(108270,30014,55755)
-                                                continue
-                                            else
-                                                Bc=Qb[22253]or Ub(48715,22253,685)
-                                                continue
-                                            end
-                                            Bc=Qb[11706]or Ub(117139,11706,43357)
-                                        elseif Bc<=10718 then
-                                            rb[zc]=hb;
-                                            Bc,zb=Qb[3528]or Ub(107197,3528,14438),hb
-                                        else
-                                            zc=oc(zb)
-                                            if zc~=nil and zc[Yb('d\166\23O\156\f',';\249~')]~=nil then
-                                                Bc=Qb[-7430]or Ub(29044,-7430,9349)
-                                                continue
-                                            elseif(Cb(zb)==Yb('\131\254\149\243\146','\247\159'))then
-                                                Bc=Qb[22472]or Ub(37875,22472,19200)
-                                                continue
-                                            else
-                                                Bc=Qb[239]or Ub(116105,239,15781)
-                                                continue
-                                            end
-                                            Bc=Qb[1192]or Ub(22187,1192,20043)
-                                        end
-                                    elseif Bc>=9522 then
-                                        if Bc>9522 then
-                                            xa=ra
-                                            if n_~=n_ then
-                                                Bc=Qb[10356]or Ub(27734,10356,16102)
-                                            else
-                                                Bc=27835
-                                            end
-                                        else
-                                            ra=ra+bc;
-                                            xa=ra
-                                            if ra~=ra then
-                                                Bc=Qb[9180]or Ub(46120,9180,18504)
-                                            else
-                                                Bc=30398
-                                            end
-                                        end
-                                    elseif Bc<=8919 then
-                                        zc=oc(zb)
-                                        if zc~=nil and zc[Yb('\159\190C\180\132X','\192\225*')]~=nil then
-                                            Bc=Qb[12871]or Ub(25146,12871,14683)
-                                            continue
-                                        elseif(Cb(zb)==Yb('u\211c\222d','\1\178'))then
-                                            Bc=Qb[-31160]or Ub(65158,-31160,18106)
-                                            continue
-                                        else
-                                            Bc=Qb[-5635]or Ub(72725,-5635,46128)
-                                            continue
-                                        end
-                                        Bc=Qb[7273]or Ub(102732,7273,15081)
-                                    else
-                                        zc,zb=Ga[21883],Ga[2373]-1
-                                        if zb==-1 then
-                                            Bc=Qb[11123]or Ub(92755,11123,36564)
-                                            continue
-                                        end
-                                        Bc=Qb[12658]or Ub(122101,12658,12454)
-                                    end
-                                elseif Bc<=7839 then
-                                    if Bc<=7661 then
-                                        if Bc>=7390 then
-                                            if Bc<=7390 then
-                                                rb[Ga[21883]],Bc=nil,Qb[14871]or Ub(14820,14871,55600)
-                                            else
-                                                if jb>169 then
-                                                    Bc=Qb[-1306]or Ub(120726,-1306,9894)
-                                                    continue
-                                                else
-                                                    Bc=Qb[31714]or Ub(128838,31714,399)
-                                                    continue
-                                                end
-                                                Bc=Qb[-6298]or Ub(127107,-6298,32845)
-                                            end
-                                        else
-                                            mb(Ec);
-                                            Bc,Vb[hb]=Qb[-31808]or Ub(115645,-31808,15193),nil
-                                        end
-                                    elseif Bc<=7749 then
-                                        qa+=1;
-                                        Bc=Qb[-16822]or Ub(37535,-16822,25257)
-                                    else
-                                        zc=Ga[21883];
-                                        zb,db=rb[zc],nil;
-                                        ya=zb;
-                                        db=Ra(ya)==Yb('=\230?1\246 ','S\147R')
-                                        if not db then
-                                            Bc=Qb[-21778]or Ub(130106,-21778,32457)
-                                            continue
-                                        end
-                                        Bc=Qb[-27621]or Ub(87841,-27621,44682)
-                                    end
-                                elseif Bc<8518 then
-                                    if Bc>8187 then
-                                        Ec[2]=Ec[3][Ec[1]];
-                                        Ec[3]=Ec;
-                                        Ec[1]=2;
-                                        Bc,Ja[hb]=Qb[-21342]or Ub(111848,-21342,7173),nil
-                                    else
-                                        if jb>63 then
-                                            Bc=Qb[-8985]or Ub(10254,-8985,54073)
-                                            continue
-                                        else
-                                            Bc=Qb[16558]or Ub(1024,16558,54732)
-                                            continue
-                                        end
-                                        Bc=Qb[-32110]or Ub(17920,-32110,6092)
-                                    end
-                                elseif Bc>8518 then
-                                    Fa=n_
-                                    if bc~=bc then
-                                        Bc=Qb[13458]or Ub(125119,13458,64241)
-                                    else
-                                        Bc=Qb[13546]or Ub(115163,13546,34709)
-                                    end
-                                else
-                                    qa+=1;
-                                    Bc=Qb[-10582]or Ub(115349,-10582,37539)
-                                end
-                            elseif Bc>=14196 then
-                                if Bc>=14974 then
-                                    if Bc<=15881 then
-                                        if Bc<15113 then
-                                            rb[Ga[21883]],Bc=rb[Ga[2373]],Qb[3814]or Ub(123238,3814,62134)
-                                        elseif Bc<=15113 then
-                                            if Ga[17956]==71 then
-                                                Bc=Qb[-20842]or Ub(54943,-20842,24826)
-                                                continue
-                                            elseif(Ga[17956]==96)then
-                                                Bc=Qb[-4498]or Ub(107047,-4498,56026)
-                                                continue
-                                            else
-                                                Bc=Qb[16612]or Ub(42249,16612,26724)
-                                                continue
-                                            end
-                                            Bc=Qb[-25481]or Ub(130949,-25481,40787)
-                                        else
-                                            qa-=1;
-                                            R[qa],Bc={[42971]=186,[21883]=ub(Ga[21883],129),[2373]=ub(Ga[2373],60),[17956]=0},Qb[12059]or Ub(12541,12059,49163)
-                                        end
-                                    elseif Bc>16034 then
-                                        v=xa[2373];
-                                        Zb=Ja[v]
-                                        if Zb==nil then
-                                            Bc=Qb[-26756]or Ub(108946,-26756,41416)
-                                            continue
-                                        end
-                                        Bc=30167
-                                    else
-                                        if jb>27 then
-                                            Bc=Qb[-29135]or Ub(112968,-29135,63264)
-                                            continue
-                                        else
-                                            Bc=Qb[-27244]or Ub(112996,-27244,33485)
-                                            continue
-                                        end
-                                        Bc=Qb[10885]or Ub(124437,10885,63011)
-                                    end
-                                elseif Bc>14645 then
-                                    zc,zb=nil,rb[Ga[21883]];
-                                    zc=Ra(zb)==Yb('\149\232s\236\135\244r\225','\243\157\29\143')
-                                    if(not zc)then
-                                        Bc=Qb[-10182]or Ub(5835,-10182,57797)
-                                        continue
-                                    else
-                                        Bc=Qb[-24333]or Ub(97556,-24333,61238)
-                                        continue
-                                    end
-                                    Bc=62879
-                                elseif Bc>=14624 then
-                                    if Bc<=14624 then
-                                        h'';
-                                        Bc=Qb[-30794]or Ub(13798,-30794,5092)
-                                    else
-                                        zc,zb=nil,ub(Ga[30012],27289);
-                                        zc=if zb<32768 then zb else zb-65536;
-                                        db=zc;
-                                        ya=M[db+1];
-                                        hb=ya[48065];
-                                        Ec=sc(hb);
-                                        rb[ub(Ga[21883],61)]=cc(ya,Ec);
-                                        ia,n_,ra,Bc=70,1,(hb)+69,Qb[-22336]or Ub(67653,-22336,41445)
-                                    end
-                                else
-                                    Bc,zb[24488]=Qb[-14215]or Ub(16190,-14215,34753),ya
-                                end
-                            elseif Bc>11666 then
-                                if Bc>13110 then
-                                    if jb>79 then
-                                        Bc=Qb[-32334]or Ub(54116,-32334,26564)
-                                        continue
-                                    else
-                                        Bc=Qb[2277]or Ub(10659,2277,23394)
-                                        continue
-                                    end
-                                    Bc=Qb[5277]or Ub(8900,5277,12816)
-                                elseif Bc<=12876 then
-                                    if(Ec==-2)then
-                                        Bc=Qb[962]or Ub(113132,962,34124)
-                                        continue
-                                    else
-                                        Bc=Qb[-18508]or Ub(6316,-18508,25577)
-                                        continue
-                                    end
-                                    Bc=Qb[21316]or Ub(106946,21316,45330)
-                                else
-                                    ra=ra+bc;
-                                    xa=ra
-                                    if ra~=ra then
-                                        Bc=Qb[-20108]or Ub(42117,-20108,25939)
-                                    else
-                                        Bc=Qb[26444]or Ub(98871,26444,46387)
-                                    end
-                                end
-                            elseif Bc<=11436 then
-                                if Bc>11372 then
-                                    if rb[Ga[21883]]then
-                                        Bc=Qb[24088]or Ub(3113,24088,61590)
-                                        continue
-                                    end
-                                    Bc=Qb[27980]or Ub(8322,27980,12370)
-                                elseif Bc>11323 then
-                                    qa+=Ga[36987];
-                                    Bc=Qb[16708]or Ub(28939,16708,725)
-                                else
-                                    hb,Bc=hb..Ob(ub(Xa(db,(n_-139)+1),Xa(ya,(n_-139)%#ya+1))),Qb[-15854]or Ub(20663,-15854,61135)
-                                end
-                            elseif Bc<=11486 then
-                                db,Bc=Ec,Qb[-27598]or Ub(19473,-27598,56392)
-                                continue
-                            else
-                                zb,db,ya=zc[Yb('Kp)\96J2','\20/@')](zb);
-                                Bc=Qb[20503]or Ub(15764,20503,26038)
-                            end
-                        elseif Bc<3297 then
-                            if Bc<2420 then
-                                if Bc>=1535 then
-                                    if Bc>1867 then
-                                        if Bc<=1902 then
-                                            hb,Ec=zb[24488],Ga[24488];
-                                            Ec=Yb('d\23\16ut\224\4\226','(\231Z\194')..Ec;
-                                            ia='';
-                                            Bc,bc,ra,n_=Qb[32629]or Ub(4891,32629,40283),1,190,(#hb-1)+190
-                                        else
-                                            if(jb>136)then
-                                                Bc=Qb[23462]or Ub(38908,23462,8394)
-                                                continue
-                                            else
-                                                Bc=Qb[-18169]or Ub(120830,-18169,60768)
-                                                continue
-                                            end
-                                            Bc=Qb[-4025]or Ub(33209,-4025,20807)
-                                        end
-                                    elseif Bc>1866 then
-                                        zc,zb=Ga[17956],Ga[21883];
-                                        db,ya=Sb(wa,rb,'',zc,zb)
-                                        if not db then
-                                            Bc=Qb[19410]or Ub(100430,19410,44202)
-                                            continue
-                                        end
-                                        Bc=37143
-                                    elseif Bc<=1535 then
-                                        qa-=1;
-                                        Bc,R[qa]=Qb[22424]or Ub(127890,22424,33698),{[42971]=119,[21883]=ub(Ga[21883],147),[2373]=ub(Ga[2373],93),[17956]=0}
-                                    else
-                                        Bc,rb[Ga[21883]]=Qb[21016]or Ub(4967,21016,64689),-rb[Ga[2373]]
-                                    end
-                                elseif Bc<=1295 then
-                                    if Bc<=1018 then
-                                        if Bc>476 then
-                                            zb,db,ya=Ja
-                                            if Cb(zb)~=Yb('\19\49\150k\1-\151f','uD\248\b')then
-                                                Bc=Qb[-25009]or Ub(13546,-25009,18255)
-                                                continue
-                                            end
-                                            Bc=Qb[16448]or Ub(29983,16448,14611)
-                                        else
-                                            qa+=Ga[36987];
-                                            Bc=Qb[25869]or Ub(23067,25869,14885)
-                                        end
-                                    else
-                                        if(jb>68)then
-                                            Bc=Qb[-21960]or Ub(94611,-21960,63332)
-                                            continue
-                                        else
-                                            Bc=Qb[-6113]or Ub(14931,-6113,4763)
-                                            continue
-                                        end
-                                        Bc=Qb[9184]or Ub(8098,9184,65394)
-                                    end
-                                else
-                                    qa-=1;
-                                    R[qa],Bc={[42971]=169,[21883]=ub(Ga[21883],152),[2373]=ub(Ga[2373],185),[17956]=0},Qb[-29238]or Ub(37549,-29238,25211)
-                                end
-                            elseif Bc>2939 then
-                                if Bc>3173 then
-                                    zb,Bc=hb,Qb[23024]or Ub(111908,23024,63008)
-                                    continue
-                                elseif Bc<2966 then
-                                    qa+=Ga[36987];
-                                    Bc=Qb[30659]or Ub(31282,30659,7106)
-                                elseif Bc<=2966 then
-                                    Bc,rb[Ga[21883]]=Qb[-16987]or Ub(33272,-16987,20740),rb[Ga[17956]]%Ga[40045]
-                                else
-                                    if jb>115 then
-                                        Bc=Qb[25595]or Ub(115384,25595,64941)
-                                        continue
-                                    else
-                                        Bc=Qb[1695]or Ub(110616,1695,43505)
-                                        continue
-                                    end
-                                    Bc=Qb[26753]or Ub(19905,26753,11535)
-                                end
-                            elseif Bc<=2899 then
-                                if Bc>2748 then
-                                    rb[zc+1]=ra;
-                                    Bc,hb=Qb[-3]or Ub(123921,-3,7769),ra
-                                elseif Bc<=2420 then
-                                    qa-=1;
-                                    R[qa],Bc={[42971]=82,[21883]=ub(Ga[21883],29),[2373]=ub(Ga[2373],12),[17956]=0},Qb[20407]or Ub(19671,20407,11361)
-                                else
-                                    if jb>17 then
-                                        Bc=Qb[-20229]or Ub(114970,-20229,42758)
-                                        continue
-                                    else
-                                        Bc=Qb[-5525]or Ub(125380,-5525,41928)
-                                        continue
-                                    end
-                                    Bc=Qb[5753]or Ub(129655,5753,39809)
-                                end
-                            elseif Bc>2923 then
-                                zc=Ga[40045];
-                                rb[Ga[17956]]=yb[zc]or La[20735][zc];
-                                qa+=1;
-                                Bc=Qb[-2162]or Ub(116272,-2162,38908)
-                            else
-                                Bc,zb[28904]=Qb[4791]or Ub(126545,4791,46742),hb
-                            end
-                        elseif Bc<5425 then
-                            if Bc<=4217 then
-                                if Bc>3706 then
-                                    if Bc>4017 then
-                                        h'';
-                                        Bc=Qb[30931]or Ub(30208,30931,52118)
-                                    else
-                                        zb,db,ya=vb(zb);
-                                        Bc=Qb[-14057]or Ub(92801,-14057,49756)
-                                    end
-                                elseif Bc<=3449 then
-                                    if Bc>3297 then
-                                        hb={db(rb[zc+1],rb[zc+2])};
-                                        Nb(hb,1,zb,zc+3,rb)
-                                        if(rb[zc+3]~=nil)then
-                                            Bc=Qb[5447]or Ub(114864,5447,64155)
-                                            continue
-                                        else
-                                            Bc=Qb[22450]or Ub(5271,22450,12909)
-                                            continue
-                                        end
-                                        Bc=Qb[11095]or Ub(43755,11095,18997)
-                                    else
-                                        if jb>98 then
-                                            Bc=Qb[-16415]or Ub(33293,-16415,29147)
-                                            continue
-                                        else
-                                            Bc=Qb[6967]or Ub(94639,6967,53943)
-                                            continue
-                                        end
-                                        Bc=Qb[4939]or Ub(6639,4939,63801)
-                                    end
-                                else
-                                    zc=rb[Ga[17956]];
-                                    Bc,rb[Ga[21883]]=Qb[10985]or Ub(44494,10985,19742),if zc then zc else rb[Ga[2373]]or false
-                                end
-                            elseif Bc>=4601 then
-                                if Bc<=4601 then
-                                    ya=ya+Ec;
-                                    ia=ya
-                                    if ya~=ya then
-                                        Bc=Qb[31073]or Ub(45369,31073,17095)
-                                    else
-                                        Bc=43215
-                                    end
-                                else
-                                    Ec=Ec+ra;
-                                    n_=Ec
-                                    if Ec~=Ec then
-                                        Bc=Qb[15824]or Ub(7259,15824,41178)
-                                    else
-                                        Bc=Qb[15161]or Ub(21896,15161,25157)
-                                    end
-                                end
-                            elseif Bc>4228 then
-                                zb,db,ya=zc[Yb('t\167\\_\157G','+\248\53')](zb);
-                                Bc=Qb[25808]or Ub(77256,25808,34149)
-                            else
-                                Ga[42971]=17;
-                                qa+=1;
-                                Bc=Qb[-19549]or Ub(2535,-19549,59697)
-                            end
-                        elseif Bc>=6174 then
-                            if Bc>6914 then
-                                if Bc<=6969 then
-                                    if jb>45 then
-                                        Bc=Qb[-13172]or Ub(37450,-13172,27518)
-                                        continue
-                                    else
-                                        Bc=Qb[7541]or Ub(118582,7541,52572)
-                                        continue
-                                    end
-                                    Bc=Qb[21649]or Ub(18467,21649,10733)
-                                else
-                                    hb,Ec=zb(db,ya);
-                                    ya=hb
-                                    if ya==nil then
-                                        Bc=Qb[-26255]or Ub(4812,-26255,57880)
-                                    else
-                                        Bc=20496
-                                    end
-                                end
-                            elseif Bc>=6546 then
-                                if Bc<=6546 then
-                                    if(jb>120)then
-                                        Bc=Qb[18534]or Ub(126067,18534,5512)
-                                        continue
-                                    else
-                                        Bc=Qb[10109]or Ub(46519,10109,18006)
-                                        continue
-                                    end
-                                    Bc=Qb[2704]or Ub(121538,2704,47634)
-                                else
-                                    if jb>73 then
-                                        Bc=Qb[-29746]or Ub(129037,-29746,29357)
-                                        continue
-                                    else
-                                        Bc=Qb[16227]or Ub(103779,16227,54044)
-                                        continue
-                                    end
-                                    Bc=Qb[-17419]or Ub(30247,-17419,2033)
-                                end
-                            else
-                                if(jb>145)then
-                                    Bc=Qb[19719]or Ub(41913,19719,19103)
-                                    continue
-                                else
-                                    Bc=Qb[31770]or Ub(46426,31770,1080)
-                                    continue
-                                end
-                                Bc=Qb[9950]or Ub(38581,9950,26179)
-                            end
-                        elseif Bc>6047 then
-                            zb[40045]=db
-                            if zc==2 then
-                                Bc=Qb[30698]or Ub(38460,30698,17448)
-                                continue
-                            elseif(zc==3)then
-                                Bc=Qb[-16127]or Ub(2902,-16127,29004)
-                                continue
-                            else
-                                Bc=Qb[-17037]or Ub(30806,-17037,49305)
-                                continue
-                            end
-                            Bc=4228
-                        elseif Bc<=5773 then
-                            if Bc>5425 then
-                                Bc,ya=Qb[27968]or Ub(114490,27968,54406),ia
-                                continue
-                            else
-                                qa+=Ga[36987];
-                                Bc=Qb[-3094]or Ub(45849,-3094,17191)
-                            end
-                        else
-                            qa+=1;
-                            Bc=Qb[24446]or Ub(40213,24446,32035)
-                        end
-                    elseif Bc>=24950 then
-                        if Bc>28560 then
-                            if Bc<=30079 then
-                                if Bc<=29221 then
-                                    if Bc>29087 then
-                                        if Bc<=29100 then
-                                            if(jb>66)then
-                                                Bc=Qb[-18802]or Ub(106534,-18802,59081)
-                                                continue
-                                            else
-                                                Bc=Qb[31238]or Ub(22940,31238,53722)
-                                                continue
-                                            end
-                                            Bc=Qb[-30432]or Ub(17720,-30432,5828)
-                                        else
-                                            if(jb>191)then
-                                                Bc=Qb[20574]or Ub(15021,20574,20960)
-                                                continue
-                                            else
-                                                Bc=Qb[-30066]or Ub(102975,-30066,43228)
-                                                continue
-                                            end
-                                            Bc=Qb[-13327]or Ub(117230,-13327,43326)
-                                        end
-                                    elseif Bc<29047 then
-                                        qa+=1;
-                                        Bc=Qb[-16626]or Ub(11460,-16626,52240)
-                                    elseif Bc<=29047 then
-                                        xa=ra
-                                        if n_~=n_ then
-                                            Bc=Qb[-22247]or Ub(123768,-22247,63256)
-                                        else
-                                            Bc=30398
-                                        end
-                                    else
-                                        if(ia>=0 and hb>Ec)or((ia<0 or ia~=ia)and hb<Ec)then
-                                            Bc=Qb[19632]or Ub(6138,19632,11920)
-                                        else
-                                            Bc=33222
-                                        end
-                                    end
-                                elseif Bc<29878 then
-                                    if Bc<=29247 then
-                                        rb[zc+2]=xa;
-                                        Bc,ra=Qb[-11266]or Ub(5235,-11266,57279),xa
-                                    else
-                                        h(Ec);
-                                        Bc=Qb[-13058]or Ub(6414,-13058,34713)
-                                    end
-                                elseif Bc>29878 then
-                                    Bc,ia=Qb[-13192]or Ub(116662,-13192,41775),ia..Ob(ub(Xa(hb,(xa-190)+1),Xa(Ec,(xa-190)%#Ec+1)))
-                                else
-                                    if Ga[17956]==55 then
-                                        Bc=Qb[-2508]or Ub(114821,-2508,5899)
-                                        continue
-                                    elseif(Ga[17956]==135)then
-                                        Bc=Qb[12064]or Ub(38275,12064,11124)
-                                        continue
-                                    else
-                                        Bc=Qb[-23186]or Ub(130889,-23186,46142)
-                                        continue
-                                    end
-                                    Bc=Qb[-8018]or Ub(22481,-8018,10015)
-                                end
-                            elseif Bc>31355 then
-                                if Bc>=31848 then
-                                    if Bc>31848 then
-                                        if jb>158 then
-                                            Bc=Qb[14337]or Ub(126077,14337,3836)
-                                            continue
-                                        else
-                                            Bc=Qb[-5667]or Ub(115704,-5667,3949)
-                                            continue
-                                        end
-                                        Bc=Qb[-30904]or Ub(19132,-30904,10824)
-                                    else
-                                        qa+=1;
-                                        Bc=Qb[32528]or Ub(115437,32528,37435)
-                                    end
-                                else
-                                    ra=Wb(hb)
-                                    if(ra==nil)then
-                                        Bc=Qb[4087]or Ub(9615,4087,64581)
-                                        continue
-                                    else
-                                        Bc=Qb[9741]or Ub(33757,9741,5933)
-                                        continue
-                                    end
-                                    Bc=2899
-                                end
-                            elseif Bc<=30398 then
-                                if Bc>=30167 then
-                                    if Bc<=30167 then
-                                        Bc,Ec[(bc-69)]=Qb[-32513]or Ub(98793,-32513,47080),Zb
-                                    else
-                                        if(bc>=0 and ra>n_)or((bc<0 or bc~=bc)and ra<n_)then
-                                            Bc=Qb[31960]or Ub(27652,31960,28836)
-                                        else
-                                            Bc=58359
-                                        end
-                                    end
-                                else
-                                    rb[Ga[2373]],Bc=rb[Ga[17956]]-rb[Ga[21883]],Qb[3010]or Ub(25168,3010,29596)
-                                end
-                            elseif Bc<=30562 then
-                                zc,zb,db=Ga[40045],Ga[11985],rb[Ga[21883]]
-                                if(db==zc)~=zb then
-                                    Bc=Qb[20974]or Ub(27842,20974,51805)
-                                    continue
-                                else
-                                    Bc=Qb[23968]or Ub(47359,23968,2079)
-                                    continue
-                                end
-                                Bc=Qb[-9386]or Ub(117886,-9386,44430)
-                            else
-                                zb,db,ya=Vb
-                                if(Cb(zb)~=Yb('3\15\201\201!\19\200\196','Uz\167\170'))then
-                                    Bc=Qb[20723]or Ub(42048,20723,23129)
-                                    continue
-                                else
-                                    Bc=Qb[18792]or Ub(127692,18792,10862)
-                                    continue
-                                end
-                                Bc=Qb[11348]or Ub(86008,11348,46874)
-                            end
-                        elseif Bc<=27537 then
-                            if Bc<=26085 then
-                                if Bc<=25648 then
-                                    if Bc>=25624 then
-                                        if Bc>25624 then
-                                            zc,zb,db=Ga[17956],Ga[2373],Ga[40045];
-                                            ya=rb[zb];
-                                            rb[zc+1]=ya;
-                                            rb[zc]=ya[db];
-                                            qa+=1;
-                                            Bc=Qb[-27635]or Ub(10579,-27635,51869)
-                                        else
-                                            Bc,rb[Ga[21883]]=Qb[-26465]or Ub(33861,-26465,21907),not rb[Ga[2373]]
-                                        end
-                                    elseif Bc<=24950 then
-                                        zc,zb=Ga[21883],Ga[2373];
-                                        db=zb-1
-                                        if(db==-1)then
-                                            Bc=Qb[-16830]or Ub(117153,-16830,28789)
-                                            continue
-                                        else
-                                            Bc=Qb[-8441]or Ub(13327,-8441,2008)
-                                            continue
-                                        end
-                                        Bc=Qb[-22321]or Ub(103908,-22321,43754)
-                                    else
-                                        Bc,ia=Qb[23190]or Ub(9420,23190,20210),db-1
-                                    end
-                                elseif Bc<=25813 then
-                                    if(zc==3)then
-                                        Bc=Qb[-14767]or Ub(91253,-14767,59100)
-                                        continue
-                                    else
-                                        Bc=Qb[-20131]or Ub(121682,-20131,44208)
-                                        continue
-                                    end
-                                    Bc=Qb[20146]or Ub(32524,20146,28910)
-                                else
-                                    db[(ia-64)],Bc=Ab[ra[2373]+1],Qb[6644]or Ub(36850,6644,5550)
-                                end
-                            elseif Bc<27202 then
-                                if Bc>26695 then
-                                    Bc,ya=Qb[-21020]or Ub(1629,-21020,23980),nil
-                                else
-                                    rb[Ga[21883]][Ga[17956]+1],Bc=rb[Ga[2373]],Qb[25053]or Ub(121100,25053,47832)
-                                end
-                            elseif Bc<=27202 then
-                                ia=ia+n_;
-                                bc=ia
-                                if ia~=ia then
-                                    Bc=Qb[10177]or Ub(31526,10177,5366)
-                                else
-                                    Bc=Qb[-30772]or Ub(46838,-30772,19532)
-                                end
-                            else
-                                rb[Ga[21883]],Bc=rb[Ga[17956]]*Ga[40045],Qb[15602]or Ub(123083,15602,61461)
-                            end
-                        elseif Bc>28268 then
-                            if Bc>28506 then
-                                zb,db,ya=vb(zb);
-                                Bc=Qb[-11911]or Ub(10697,-11911,20837)
-                            elseif Bc<=28418 then
-                                if jb>152 then
-                                    Bc=Qb[-32552]or Ub(30029,-32552,19224)
-                                    continue
-                                else
-                                    Bc=Qb[18778]or Ub(114585,18778,37589)
-                                    continue
-                                end
-                                Bc=Qb[13070]or Ub(34688,13070,22348)
-                            else
-                                if(jb>114)then
-                                    Bc=Qb[21800]or Ub(109908,21800,40629)
-                                    continue
-                                else
-                                    Bc=Qb[-15943]or Ub(103421,-15943,46442)
-                                    continue
-                                end
-                                Bc=Qb[28720]or Ub(18978,28720,11250)
-                            end
-                        elseif Bc>=28131 then
-                            if Bc<28136 then
-                                rb[Ga[17956]]=Ga[21883]==1;
-                                qa+=Ga[2373];
-                                Bc=Qb[-27448]or Ub(35110,-27448,27382)
-                            elseif Bc<=28136 then
-                                rb[zc+2]=rb[zc+3];
-                                qa+=Ga[36987];
-                                Bc=Qb[-25576]or Ub(43229,-25576,18539)
-                            else
-                                qa+=Ga[36987];
-                                Bc=Qb[-1950]or Ub(133,-1950,53331)
-                            end
-                        elseif Bc>27733 then
-                            if(bc>=0 and ra>n_)or((bc<0 or bc~=bc)and ra<n_)then
-                                Bc=Qb[-26941]or Ub(44992,-26941,30732)
-                            else
-                                Bc=30079
-                            end
-                        else
-                            qa+=1;
-                            Bc=Qb[-15258]or Ub(15169,-15258,54415)
-                        end
-                    elseif Bc<20496 then
-                        if Bc<=18045 then
-                            if Bc>17525 then
-                                if Bc<17994 then
-                                    if Bc>17725 then
-                                        qa+=1;
-                                        Bc=Qb[1451]or Ub(108428,1451,46936)
-                                    else
-                                        h'';
-                                        Bc=Qb[30677]or Ub(73988,30677,33574)
-                                    end
-                                elseif Bc>17994 then
-                                    bc={[2]=rb[ra[2373]],[1]=2};
-                                    bc[3]=bc;
-                                    Bc,db[(ia-64)]=Qb[9475]or Ub(25542,9475,14722),bc
-                                else
-                                    ya,hb=zb[40045],Ga[40045];
-                                    hb=Yb('\195%\136\48\211\210\156\167','\143\213\194\135')..hb;
-                                    Ec='';
-                                    n_,ra,Bc,ia=1,(#ya-1)+143,43510,143
-                                end
-                            elseif Bc<=16640 then
-                                if Bc<16613 then
-                                    qa+=Ga[36987];
-                                    Bc=Qb[-32069]or Ub(120023,-32069,42081)
-                                elseif Bc<=16613 then
-                                    zc=Ga[40045];
-                                    rb[Ga[21883]][zc]=rb[Ga[2373]];
-                                    qa+=1;
-                                    Bc=Qb[-10170]or Ub(17686,-10170,5414)
-                                else
-                                    Bc,Ec[(bc-69)]=Qb[-17062]or Ub(20806,-17062,1867),Ab[xa[2373]+1]
-                                end
-                            elseif Bc<=17227 then
-                                qa-=1;
-                                Bc,R[qa]=Qb[-15805]or Ub(21147,-15805,8869),{[42971]=192,[21883]=ub(Ga[21883],35),[2373]=ub(Ga[2373],38),[17956]=0}
-                            else
-                                qa+=1;
-                                Bc=Qb[-21824]or Ub(3784,-21824,60948)
-                            end
-                        elseif Bc>19489 then
-                            if Bc>=20118 then
-                                if Bc>20118 then
-                                    rb[Ga[17956]],Bc=rb[Ga[21883]]-Ga[40045],Qb[6556]or Ub(12958,6556,49838)
-                                else
-                                    zc,zb=nil,rb[Ga[21883]];
-                                    zc=Ra(zb)==Yb('\228\az_\246\27{R','\130r\20<')
-                                    if not zc then
-                                        Bc=Qb[13911]or Ub(118581,13911,25123)
-                                        continue
-                                    end
-                                    Bc=Qb[802]or Ub(91840,802,43304)
-                                end
-                            else
-                                qa+=Ga[36987];
-                                Bc=Qb[-16983]or Ub(117680,-16983,43900)
-                            end
-                        elseif Bc>=18992 then
-                            if Bc<19437 then
-                                if jb>194 then
-                                    Bc=Qb[-22004]or Ub(124387,-22004,30600)
-                                    continue
-                                else
-                                    Bc=Qb[20659]or Ub(22214,20659,17980)
-                                    continue
-                                end
-                                Bc=Qb[-9664]or Ub(5276,-9664,58536)
-                            elseif Bc>19437 then
-                                ya,Bc=ia,Qb[8025]or Ub(15172,8025,58555)
-                                continue
-                            else
-                                rb[Ga[21883]],Bc=#rb[Ga[2373]],Qb[-5064]or Ub(12061,-5064,53035)
-                            end
-                        elseif Bc>18078 then
-                            if not q then
-                                Bc=Qb[2231]or Ub(126813,2231,1566)
-                                continue
-                            end
-                            Bc=42934
-                        else
-                            if(rb[Ga[21883]]<rb[Ga[42517]])then
-                                Bc=Qb[-4255]or Ub(126195,-4255,44026)
-                                continue
-                            else
-                                Bc=Qb[-3851]or Ub(4225,-3851,63963)
-                                continue
-                            end
-                            Bc=Qb[-4293]or Ub(121471,-4293,48009)
-                        end
-                    elseif Bc>23032 then
-                        if Bc>24049 then
-                            if Bc<=24550 then
-                                if Bc>24415 then
-                                    if jb>82 then
-                                        Bc=Qb[-5420]or Ub(21136,-5420,20868)
-                                        continue
-                                    else
-                                        Bc=Qb[-29702]or Ub(13268,-29702,16922)
-                                        continue
-                                    end
-                                    Bc=Qb[-22833]or Ub(125145,-22833,34919)
-                                else
-                                    qa+=1;
-                                    Bc=Qb[-25218]or Ub(14641,-25218,56063)
-                                end
-                            else
-                                Zb={[1]=v,[3]=rb};
-                                Ja[v],Bc=Zb,Qb[563]or Ub(315,563,8979)
-                            end
-                        elseif Bc<23947 then
-                            if Bc>23037 then
-                                if(rb[Ga[21883]]==rb[Ga[42517]])then
-                                    Bc=Qb[-11742]or Ub(50819,-11742,23113)
-                                    continue
-                                else
-                                    Bc=Qb[30065]or Ub(13626,30065,6625)
-                                    continue
-                                end
-                                Bc=Qb[-12436]or Ub(12289,-12436,49615)
-                            else
-                                if(xa>=0 and n_>bc)or((xa<0 or xa~=xa)and n_<bc)then
-                                    Bc=Qb[15631]or Ub(17147,15631,7341)
-                                else
-                                    Bc=32840
-                                end
-                            end
-                        elseif Bc<=24008 then
-                            if Bc<=23947 then
-                                if(hb>0)then
-                                    Bc=Qb[-7848]or Ub(105230,-7848,64792)
-                                    continue
-                                else
-                                    Bc=Qb[-2128]or Ub(130383,-2128,56176)
-                                    continue
-                                end
-                                Bc=Qb[5566]or Ub(11517,5566,52235)
-                            else
-                                qa-=1;
-                                R[qa],Bc={[42971]=27,[21883]=ub(Ga[21883],50),[2373]=ub(Ga[2373],81),[17956]=0},Qb[-12950]or Ub(45853,-12950,17195)
-                            end
-                        else
-                            if jb>93 then
-                                Bc=Qb[-17140]or Ub(82948,-17140,47982)
-                                continue
-                            else
-                                Bc=Qb[-12524]or Ub(1806,-12524,13221)
-                                continue
-                            end
-                            Bc=Qb[29012]or Ub(39873,29012,31503)
-                        end
-                    elseif Bc<21580 then
-                        if Bc>=20951 then
-                            if Bc<=21004 then
-                                if Bc<=20951 then
-                                    if(n_>=0 and ia>ra)or((n_<0 or n_~=n_)and ia<ra)then
-                                        Bc=Qb[-29385]or Ub(43470,-29385,18718)
-                                    else
-                                        Bc=Qb[-24880]or Ub(111147,-24880,60332)
-                                    end
-                                else
-                                    zc=Ab[Ga[2373]+1];
-                                    Bc,zc[3][zc[1]]=Qb[28862]or Ub(26526,28862,30638),rb[Ga[21883]]
-                                end
-                            else
-                                zc,zb=nil,ub(Ga[30012],18805);
-                                zc=if zb<32768 then zb else zb-65536;
-                                db=zc;
-                                Bc,rb[ub(Ga[21883],228)]=Qb[2891]or Ub(123065,2891,61511),db
-                            end
-                        elseif Bc>20496 then
-                            if(n_>=0 and ia>ra)or((n_<0 or n_~=n_)and ia<ra)then
-                                Bc=Qb[-5483]or Ub(315,-5483,62490)
-                            else
-                                Bc=41693
-                            end
-                        else
-                            if Ec[1]>=Ga[21883]then
-                                Bc=Qb[-10635]or Ub(81078,-10635,45989)
-                                continue
-                            end
-                            Bc=Qb[21439]or Ub(27691,21439,8671)
-                        end
-                    elseif Bc<=22005 then
-                        if Bc>21681 then
-                            hb,Bc=ra,Qb[6715]or Ub(123682,6715,45196)
-                            continue
-                        elseif Bc>21580 then
-                            Nb(rb,zb,zb+db-1,Ga[42517],rb[zc]);
-                            qa+=1;
-                            Bc=Qb[25885]or Ub(120254,25885,42318)
-                        else
-                            if(jb>85)then
-                                Bc=Qb[6373]or Ub(113826,6373,41768)
-                                continue
-                            else
-                                Bc=Qb[-27863]or Ub(129638,-27863,62415)
-                                continue
-                            end
-                            Bc=Qb[-2616]or Ub(23848,-2616,16116)
-                        end
-                    elseif Bc>22422 then
-                        qa-=1;
-                        R[qa],Bc={[42971]=93,[21883]=ub(Ga[21883],34),[2373]=ub(Ga[2373],222),[17956]=0},Qb[15196]or Ub(29906,15196,1122)
-                    else
-                        hb=hb+ia;
-                        ra=hb
-                        if hb~=hb then
-                            Bc=Qb[27911]or Ub(129238,27911,51180)
-                        else
-                            Bc=Qb[-29256]or Ub(3801,-29256,13429)
-                        end
-                    end
-                elseif Bc>=45289 then
-                    if Bc>53594 then
-                        if Bc<59024 then
-                            if Bc>56909 then
-                                if Bc<=58120 then
-                                    if Bc<57913 then
-                                        if Bc>57020 then
-                                            if jb>217 then
-                                                Bc=Qb[6763]or Ub(85713,6763,43950)
-                                                continue
-                                            else
-                                                Bc=Qb[28786]or Ub(130613,28786,27288)
-                                                continue
-                                            end
-                                            Bc=Qb[-18322]or Ub(35992,-18322,27812)
-                                        else
-                                            if jb>229 then
-                                                Bc=Qb[14537]or Ub(16710,14537,3445)
-                                                continue
-                                            else
-                                                Bc=Qb[-7741]or Ub(14895,-7741,7368)
-                                                continue
-                                            end
-                                            Bc=Qb[-1684]or Ub(39316,-1684,31136)
-                                        end
-                                    elseif Bc>58000 then
-                                        if jb>207 then
-                                            Bc=Qb[-11295]or Ub(96058,-11295,38371)
-                                            continue
-                                        else
-                                            Bc=Qb[-9938]or Ub(101194,-9938,16075)
-                                            continue
-                                        end
-                                        Bc=Qb[-15146]or Ub(26553,-15146,30535)
-                                    elseif Bc>57913 then
-                                        if jb>238 then
-                                            Bc=Qb[23717]or Ub(92532,23717,48582)
-                                            continue
-                                        else
-                                            Bc=Qb[6738]or Ub(11479,6738,26222)
-                                            continue
-                                        end
-                                        Bc=Qb[-5819]or Ub(128712,-5819,34324)
-                                    else
-                                        zc=Ga[21883];
-                                        zb,db=rb[zc],rb[zc+1];
-                                        ya=rb[zc+2]+db;
-                                        rb[zc+2]=ya
-                                        if(db>0)then
-                                            Bc=Qb[-10925]or Ub(85842,-10925,47454)
-                                            continue
-                                        else
-                                            Bc=Qb[30259]or Ub(3017,30259,7504)
-                                            continue
-                                        end
-                                        Bc=Qb[-19157]or Ub(115202,-19157,37842)
-                                    end
-                                elseif Bc>58359 then
-                                    if jb>187 then
-                                        Bc=Qb[-18478]or Ub(84266,-18478,36217)
-                                        continue
-                                    else
-                                        Bc=Qb[-32499]or Ub(98528,-32499,38166)
-                                        continue
-                                    end
-                                    Bc=Qb[17054]or Ub(17439,17054,5161)
-                                elseif Bc<=58294 then
-                                    qa+=Ga[36987];
-                                    Bc=Qb[29505]or Ub(28212,29505,4032)
-                                else
-                                    ia,Bc=ia..Ob(ub(Xa(hb,(xa-62)+1),Xa(Ec,(xa-62)%#Ec+1))),Qb[-4583]or Ub(125466,-4583,42383)
-                                end
-                            elseif Bc<=55588 then
-                                if Bc<55018 then
-                                    if Bc>53608 then
-                                        rb[Ga[21883]],Bc=Ga[40045],Qb[-31577]or Ub(126504,-31577,36852)
-                                    else
-                                        hb,Ec=rb[zc+1],nil;
-                                        ia=hb;
-                                        Ec=Ra(ia)==Yb("Z\134\56V\150\'",'4\243U')
-                                        if not Ec then
-                                            Bc=Qb[-18601]or Ub(103193,-18601,47006)
-                                            continue
-                                        end
-                                        Bc=44555
-                                    end
-                                elseif Bc>55472 then
-                                    if(jb>172)then
-                                        Bc=Qb[31239]or Ub(95036,31239,47130)
-                                        continue
-                                    else
-                                        Bc=Qb[-2537]or Ub(28687,-2537,50635)
-                                        continue
-                                    end
-                                    Bc=Qb[-27695]or Ub(36848,-27695,28476)
-                                elseif Bc>55018 then
-                                    Ec[2]=Ec[3][Ec[1]];
-                                    Ec[3]=Ec;
-                                    Ec[1]=2;
-                                    Bc,Ja[hb]=Qb[-12406]or Ub(10068,-12406,58570),nil
-                                else
-                                    rb[Ga[21883]],Bc=db[Ga[24488]][Ga[28904]],Qb[12369]or Ub(119596,12369,38030)
-                                end
-                            elseif Bc<56867 then
-                                if Bc>55636 then
-                                    xa=Wb(ra)
-                                    if(xa==nil)then
-                                        Bc=Qb[7028]or Ub(2288,7028,65427)
-                                        continue
-                                    else
-                                        Bc=Qb[3936]or Ub(127066,3936,61016)
-                                        continue
-                                    end
-                                    Bc=29247
-                                else
-                                    if jb>78 then
-                                        Bc=Qb[28892]or Ub(127701,28892,35042)
-                                        continue
-                                    else
-                                        Bc=Qb[29228]or Ub(124883,29228,42134)
-                                        continue
-                                    end
-                                    Bc=Qb[6261]or Ub(107258,6261,45578)
-                                end
-                            elseif Bc<=56867 then
-                                Bc,rb[Ga[2373]]=Qb[5545]or Ub(22815,5545,14633),rb[Ga[21883]]/Ga[40045]
-                            else
-                                qa+=Ga[36987];
-                                Bc=Qb[-9983]or Ub(25237,-9983,29347)
-                            end
-                        elseif Bc<62879 then
-                            if Bc<=60028 then
-                                if Bc<=59501 then
-                                    if Bc>=59201 then
-                                        if Bc<=59201 then
-                                            zb,db,ya=zc[Yb('\202ty\225Nb','\149+\16')](zb);
-                                            Bc=Qb[27141]or Ub(7278,27141,37344)
-                                        else
-                                            if jb>157 then
-                                                Bc=Qb[21033]or Ub(13790,21033,65422)
-                                                continue
-                                            else
-                                                Bc=Qb[-6660]or Ub(13872,-6660,25302)
-                                                continue
-                                            end
-                                            Bc=Qb[-15481]or Ub(22273,-15481,8399)
-                                        end
-                                    else
-                                        hb=Wb(zb)
-                                        if(hb==nil)then
-                                            Bc=Qb[3362]or Ub(4174,3362,727)
-                                            continue
-                                        else
-                                            Bc=Qb[-9963]or Ub(43972,-9963,27041)
-                                            continue
-                                        end
-                                        Bc=10718
-                                    end
-                                elseif Bc>59694 then
-                                    if jb>210 then
-                                        Bc=Qb[-11562]or Ub(107094,-11562,48925)
-                                        continue
-                                    else
-                                        Bc=Qb[13824]or Ub(38414,13824,31578)
-                                        continue
-                                    end
-                                    Bc=Qb[8239]or Ub(19603,8239,11357)
-                                else
-                                    if(Ga[17956]==168)then
-                                        Bc=Qb[6753]or Ub(20097,6753,8395)
-                                        continue
-                                    else
-                                        Bc=Qb[-6662]or Ub(1352,-6662,25418)
-                                        continue
-                                    end
-                                    Bc=Qb[-778]or Ub(119293,-778,41227)
-                                end
-                            elseif Bc>=61591 then
-                                if Bc>61591 then
-                                    zc,zb,db=ub(Ga[21883],12),ub(Ga[17956],165),ub(Ga[2373],126);
-                                    ya,hb=zb==0 and L-zc or zb-1,rb[zc];
-                                    Ec,ia=f_(hb(z(rb,zc+1,zc+ya)))
-                                    if(db==0)then
-                                        Bc=Qb[28925]or Ub(91448,28925,34297)
-                                        continue
-                                    else
-                                        Bc=Qb[-4183]or Ub(130492,-4183,64049)
-                                        continue
-                                    end
-                                    Bc=Qb[772]or Ub(109426,772,56596)
-                                else
-                                    Bc,ya=Qb[-1692]or Ub(130227,-1692,49207),L-zc+1
-                                end
-                            else
-                                if jb>192 then
-                                    Bc=Qb[-5550]or Ub(83719,-5550,36285)
-                                    continue
-                                else
-                                    Bc=Qb[14163]or Ub(121035,14163,34541)
-                                    continue
-                                end
-                                Bc=Qb[-29634]or Ub(125000,-29634,35220)
-                            end
-                        elseif Bc<=64685 then
-                            if Bc<63618 then
-                                if Bc<=62879 then
-                                    qa+=Ga[36987];
-                                    Bc=Qb[-31910]or Ub(1656,-31910,55172)
-                                else
-                                    if(jb>90)then
-                                        Bc=Qb[19453]or Ub(103364,19453,38490)
-                                        continue
-                                    else
-                                        Bc=Qb[-12756]or Ub(113941,-12756,65084)
-                                        continue
-                                    end
-                                    Bc=Qb[8116]or Ub(28101,8116,3347)
-                                end
-                            elseif Bc>=63714 then
-                                if Bc<=63714 then
-                                    Bc,rb[Ga[2373]]=Qb[-20252]or Ub(107515,-20252,45829),rb[Ga[21883]]+rb[Ga[17956]]
-                                else
-                                    h'';
-                                    Bc=Qb[19192]or Ub(117155,19192,56329)
-                                end
-                            else
-                                Bc,L,qa,Ja,Vb,q=18317,-1,1,w_({},{[Yb('|\164\248L\159\240','#\251\149')]=Yb(' %','V')}),w_({},{[Yb('\252%\163\204\30\171','\163z\206')]=Yb('\131\155','\232')}),false
-                            end
-                        elseif Bc>65438 then
-                            bc=ia
-                            if ra~=ra then
-                                Bc=Qb[-17855]or Ub(5648,-17855,59356)
-                            else
-                                Bc=20951
-                            end
-                        elseif Bc<=65209 then
-                            if Bc<=64958 then
-                                if(jb>204)then
-                                    Bc=Qb[31966]or Ub(6265,31966,47424)
-                                    continue
-                                else
-                                    Bc=Qb[25256]or Ub(4393,25256,39877)
-                                    continue
-                                end
-                                Bc=Qb[12963]or Ub(27711,12963,3529)
-                            else
-                                qa+=Ga[36987];
-                                Bc=Qb[-23647]or Ub(14900,-23647,56256)
-                            end
-                        else
-                            hb,Ec=zb(db,ya);
-                            ya=hb
-                            if ya==nil then
-                                Bc=Qb[30288]or Ub(102019,30288,41855)
-                            else
-                                Bc=Qb[-27482]or Ub(11169,-27482,58044)
-                            end
-                        end
-                    elseif Bc<=49840 then
-                        if Bc<47494 then
-                            if Bc>45995 then
-                                if Bc>=46665 then
-                                    if Bc<=46665 then
-                                        if ya<=zb then
-                                            Bc=Qb[22713]or Ub(122256,22713,64889)
-                                            continue
-                                        end
-                                        Bc=Qb[7245]or Ub(8984,7245,13092)
-                                    else
-                                        Bc,L=Qb[-30187]or Ub(12819,-30187,21687),zc+ia-1
-                                    end
-                                elseif Bc>46462 then
-                                    zc=Ga[40045];
-                                    rb[Ga[2373]]=rb[Ga[17956]][zc];
-                                    qa+=1;
-                                    Bc=Qb[9099]or Ub(7497,9099,65175)
-                                else
-                                    if jb>58 then
-                                        Bc=Qb[8159]or Ub(14147,8159,33299)
-                                        continue
-                                    else
-                                        Bc=Qb[724]or Ub(14712,724,16465)
-                                        continue
-                                    end
-                                    Bc=Qb[-31741]or Ub(107525,-31741,46547)
-                                end
-                            elseif Bc>=45623 then
-                                if Bc>=45631 then
-                                    if Bc>45631 then
-                                        n_=n_+xa;
-                                        Fa=n_
-                                        if n_~=n_ then
-                                            Bc=Qb[-29927]or Ub(10747,-29927,15277)
-                                        else
-                                            Bc=Qb[-22909]or Ub(107132,-22909,41016)
-                                        end
-                                    else
-                                        zc=Ab[Ga[2373]+1];
-                                        Bc,rb[Ga[21883]]=Qb[-23885]or Ub(38351,-23885,25881),zc[3][zc[1]]
-                                    end
-                                else
-                                    Bc,ya=Qb[-2228]or Ub(15702,-2228,40583),nil
-                                end
-                            elseif Bc>45289 then
-                                if jb>50 then
-                                    Bc=Qb[18658]or Ub(6290,18658,8884)
-                                    continue
-                                else
-                                    Bc=Qb[7321]or Ub(16022,7321,5410)
-                                    continue
-                                end
-                                Bc=Qb[-13918]or Ub(115802,-13918,38378)
-                            else
-                                Bc=Qb[-15070]or Ub(111102,-15070,13860)
-                                continue
-                            end
-                        elseif Bc<=49051 then
-                            if Bc>48112 then
-                                if Bc<=48675 then
-                                    Nb(Ec,1,ia,zc,rb);
-                                    Bc=Qb[13248]or Ub(22865,13248,15007)
-                                else
-                                    if(Cb(zb)==Yb('\154>\140\51\139','\238_'))then
-                                        Bc=Qb[-22638]or Ub(19462,-22638,25691)
-                                        continue
-                                    else
-                                        Bc=Qb[-32392]or Ub(33575,-32392,219)
-                                        continue
-                                    end
-                                    Bc=Qb[-9228]or Ub(29411,-9228,13847)
-                                end
-                            elseif Bc>47718 then
-                                Nb(W[31888],1,zb,zc,rb);
-                                Bc=Qb[-10232]or Ub(4324,-10232,57392)
-                            elseif Bc<=47636 then
-                                if Bc>47494 then
-                                    rb[Ga[17956]]=sc(Ga[42517]);
-                                    qa+=1;
-                                    Bc=Qb[27344]or Ub(124083,27344,62589)
-                                else
-                                    rb[Ga[21883]],Bc=db[Ga[24488]],Qb[15731]or Ub(123909,15731,60897)
-                                end
-                            else
-                                zc=M[Ga[40045]+1];
-                                zb=zc[48065];
-                                db=sc(zb);
-                                rb[Ga[21883]]=cc(zc,db);
-                                hb,Bc,ya,Ec=(zb)+64,34047,65,1
-                            end
-                        elseif Bc>49599 then
-                            hb,Ec=p(Vb[Ga],db,rb[zc+1],rb[zc+2])
-                            if(not hb)then
-                                Bc=Qb[-21916]or Ub(37050,-21916,19811)
-                                continue
-                            else
-                                Bc=Qb[24383]or Ub(7023,24383,33144)
-                                continue
-                            end
-                            Bc=12876
-                        elseif Bc<=49408 then
-                            if Bc<=49398 then
-                                if Ga[17956]==122 then
-                                    Bc=Qb[19797]or Ub(125873,19797,63978)
-                                    continue
-                                elseif Ga[17956]==156 then
-                                    Bc=Qb[1690]or Ub(1956,1690,20648)
-                                    continue
-                                elseif(Ga[17956]==168)then
-                                    Bc=Qb[6320]or Ub(125447,6320,64524)
-                                    continue
-                                else
-                                    Bc=Qb[2478]or Ub(42950,2478,17415)
-                                    continue
-                                end
-                                Bc=Qb[-30689]or Ub(18580,-30689,10400)
-                            else
-                                Ga=R[qa];
-                                jb,Bc=Ga[42971],Qb[22660]or Ub(111610,22660,58227)
-                            end
-                        else
-                            n_=Ec
-                            if ia~=ia then
-                                Bc=Qb[-17308]or Ub(33064,-17308,5157)
-                            else
-                                Bc=33406
-                            end
-                        end
-                    elseif Bc>51269 then
-                        if Bc<52478 then
-                            if Bc>=52064 then
-                                if Bc>52064 then
-                                    zb=W[34003];
-                                    Bc,L=Qb[-3525]or Ub(100601,-3525,64682),zc+zb-1
-                                else
-                                    v={[2]=rb[xa[2373]],[1]=2};
-                                    v[3]=v;
-                                    Ec[(bc-69)],Bc=v,Qb[-651]or Ub(125443,-651,59526)
-                                end
-                            elseif Bc>51331 then
-                                Bc,rb[Ga[21883]]=Qb[25481]or Ub(115326,25481,37774),rb[Ga[17956]][rb[Ga[2373]]]
-                            else
-                                if Ga[17956]==14 then
-                                    Bc=Qb[-2730]or Ub(13649,-2730,49753)
-                                    continue
-                                elseif Ga[17956]==211 then
-                                    Bc=Qb[-6658]or Ub(11397,-6658,36545)
-                                    continue
-                                else
-                                    Bc=Qb[-4316]or Ub(127739,-4316,63538)
-                                    continue
-                                end
-                                Bc=Qb[6656]or Ub(123022,6656,61534)
-                            end
-                        elseif Bc<=53586 then
-                            if Bc>52683 then
-                                hb,Ec=zb[24488],Ga[24488];
-                                Ec=Yb("\228J\30\176\244\189\n\'",'\168\186T\a')..Ec;
-                                ia='';
-                                bc,n_,ra,Bc=1,(#hb-1)+62,62,Qb[12217]or Ub(10224,12217,7466)
-                            elseif Bc<=52478 then
-                                Nb(Ec,1,zb,zc+3,rb);
-                                rb[zc+2]=rb[zc+3];
-                                qa+=Ga[36987];
-                                Bc=Qb[-23123]or Ub(1705,-23123,54903)
-                            else
-                                if(not(ra<=zb))then
-                                    Bc=Qb[82]or Ub(30542,82,27065)
-                                    continue
-                                else
-                                    Bc=Qb[10815]or Ub(10910,10815,51886)
-                                    continue
-                                end
-                                Bc=Qb[27428]or Ub(129832,27428,38132)
-                            end
-                        else
-                            if jb>31 then
-                                Bc=Qb[-30157]or Ub(23267,-30157,16839)
-                                continue
-                            else
-                                Bc=Qb[22989]or Ub(36674,22989,25063)
-                                continue
-                            end
-                            Bc=Qb[11557]or Ub(44173,11557,19547)
-                        end
-                    elseif Bc<50822 then
-                        if Bc>=50402 then
-                            if Bc<=50402 then
-                                zc=oc(zb)
-                                if(zc~=nil and zc[Yb('kH\1@r\26','4\23h')]~=nil)then
-                                    Bc=Qb[21424]or Ub(89100,21424,40332)
-                                    continue
-                                else
-                                    Bc=Qb[-10580]or Ub(93017,-10580,40177)
-                                    continue
-                                end
-                                Bc=Qb[8345]or Ub(36113,8345,257)
-                            else
-                                if jb>221 then
-                                    Bc=Qb[17914]or Ub(77433,17914,42122)
-                                    continue
-                                else
-                                    Bc=Qb[-20803]or Ub(1046,-20803,4277)
-                                    continue
-                                end
-                                Bc=Qb[-363]or Ub(119342,-363,41982)
-                            end
-                        elseif Bc>49884 then
-                            zb[24488]=ya;
-                            Bc,hb=Qb[-12171]or Ub(126652,-12171,12876),nil
-                        else
-                            Bc,rb[Ga[2373]]=Qb[24772]or Ub(118734,24772,44830),Ga[40045]-rb[Ga[17956]]
-                        end
-                    elseif Bc<50882 then
-                        if Bc<=50822 then
-                            if jb>160 then
-                                Bc=Qb[655]or Ub(120233,655,1236)
-                                continue
-                            else
-                                Bc=Qb[-27715]or Ub(624,-27715,9517)
-                                continue
-                            end
-                            Bc=Qb[23770]or Ub(40424,23770,32052)
-                        else
-                            if jb>87 then
-                                Bc=Qb[-24030]or Ub(2841,-24030,31150)
-                                continue
-                            else
-                                Bc=Qb[21206]or Ub(44813,21206,29124)
-                                continue
-                            end
-                            Bc=Qb[21428]or Ub(13480,21428,50292)
-                        end
-                    elseif Bc>=50885 then
-                        if Bc>50885 then
-                            qa-=1;
-                            Bc,R[qa]=Qb[5685]or Ub(38567,5685,26225),{[42971]=210,[21883]=ub(Ga[21883],205),[2373]=ub(Ga[2373],114),[17956]=0}
-                        else
-                            qa-=1;
-                            Bc,R[qa]=Qb[-12462]or Ub(117870,-12462,44478),{[42971]=207,[21883]=ub(Ga[21883],72),[2373]=ub(Ga[2373],114),[17956]=0}
-                        end
-                    else
-                        zc,zb,db=Ga[2373],Ga[21883],Ga[17956]-1
-                        if(db==-1)then
-                            Bc=Qb[-24942]or Ub(110641,-24942,59509)
-                            continue
-                        else
-                            Bc=Qb[-6850]or Ub(118615,-6850,39877)
-                            continue
-                        end
-                        Bc=Qb[-14882]or Ub(37030,-14882,21338)
-                    end
-                elseif Bc<=39056 then
-                    if Bc<=35507 then
-                        if Bc>33316 then
-                            if Bc>=34402 then
-                                if Bc>=34666 then
-                                    if Bc>=35342 then
-                                        if Bc<=35342 then
-                                            zc,zb,db,Bc=Ga[28039],R[qa+1],nil,17994
-                                        else
-                                            if(jb>186)then
-                                                Bc=Qb[-17457]or Ub(26845,-17457,29040)
-                                                continue
-                                            else
-                                                Bc=Qb[-9977]or Ub(38654,-9977,1818)
-                                                continue
-                                            end
-                                            Bc=Qb[-2943]or Ub(327,-2943,53905)
-                                        end
-                                    else
-                                        qa+=Ga[36987];
-                                        Bc=Qb[14872]or Ub(28881,14872,31)
-                                    end
-                                elseif Bc>34402 then
-                                    Bc,rb[Ga[17956]]=Qb[-7735]or Ub(39959,-7735,31777),rb[Ga[21883]]+Ga[40045]
-                                else
-                                    Bc,rb[Ga[2373]]=Qb[-137]or Ub(31022,-137,6910),rb[Ga[21883]]/rb[Ga[17956]]
-                                end
-                            elseif Bc>=34047 then
-                                if Bc<=34047 then
-                                    ia=ya
-                                    if hb~=hb then
-                                        Bc=Qb[-8443]or Ub(44613,-8443,20371)
-                                    else
-                                        Bc=Qb[-13917]or Ub(23313,-13917,23069)
-                                    end
-                                else
-                                    ya,Bc=zb-1,Qb[28931]or Ub(30878,28931,23648)
-                                end
-                            elseif Bc>33406 then
-                                if(jb>211)then
-                                    Bc=Qb[4337]or Ub(128027,4337,14887)
-                                    continue
-                                else
-                                    Bc=Qb[16552]or Ub(120835,16552,63458)
-                                    continue
-                                end
-                                Bc=Qb[-21568]or Ub(19925,-21568,11619)
-                            else
-                                if(ra>=0 and Ec>ia)or((ra<0 or ra~=ra)and Ec<ia)then
-                                    Bc=Qb[2294]or Ub(53338,2294,25819)
-                                else
-                                    Bc=Qb[28853]or Ub(33396,28853,30322)
-                                end
-                            end
-                        elseif Bc<32903 then
-                            if Bc<=32777 then
-                                if Bc>=32172 then
-                                    if Bc<=32172 then
-                                        if(jb>108)then
-                                            Bc=Qb[22802]or Ub(128286,22802,61248)
-                                            continue
-                                        else
-                                            Bc=Qb[-5695]or Ub(107174,-5695,45686)
-                                            continue
-                                        end
-                                        Bc=Qb[-12625]or Ub(38864,-12625,26396)
-                                    else
-                                        if jb>46 then
-                                            Bc=Qb[9684]or Ub(74819,9684,35622)
-                                            continue
-                                        else
-                                            Bc=Qb[-14978]or Ub(40256,-14978,4728)
-                                            continue
-                                        end
-                                        Bc=Qb[2778]or Ub(129459,2778,39293)
-                                    end
-                                else
-                                    Bc,rb[Ga[21883]]=Qb[-12579]or Ub(10503,-12579,51921),rb[Ga[17956]]*rb[Ga[2373]]
-                                end
-                            elseif Bc>32786 then
-                                ra,Bc=ra..Ob(ub(Xa(Ec,(Fa-216)+1),Xa(ia,(Fa-216)%#ia+1))),Qb[-22857]or Ub(117833,-22857,14833)
-                            else
-                                zb,db,ya=vb(zb);
-                                Bc=Qb[-21035]or Ub(26545,-21035,11169)
-                            end
-                        elseif Bc<33222 then
-                            if Bc>32903 then
-                                if jb>209 then
-                                    Bc=Qb[-20971]or Ub(84509,-20971,35034)
-                                    continue
-                                else
-                                    Bc=Qb[9105]or Ub(95331,9105,57640)
-                                    continue
-                                end
-                                Bc=Qb[29670]or Ub(127485,29670,33035)
-                            else
-                                if(jb>67)then
-                                    Bc=Qb[24125]or Ub(87274,24125,46659)
-                                    continue
-                                else
-                                    Bc=Qb[-26987]or Ub(24106,-26987,1493)
-                                    continue
-                                end
-                                Bc=Qb[-14717]or Ub(25243,-14717,29349)
-                            end
-                        elseif Bc>33253 then
-                            if(not(zb<=ra))then
-                                Bc=Qb[18046]or Ub(101151,18046,38011)
-                                continue
-                            else
-                                Bc=Qb[-30368]or Ub(46272,-30368,17420)
-                                continue
-                            end
-                            Bc=Qb[-27844]or Ub(37003,-27844,24661)
-                        elseif Bc>33222 then
-                            qa+=Ga[36987];
-                            Bc=Qb[-10553]or Ub(107172,-10553,45680)
-                        else
-                            ya..=rb[ra];
-                            Bc=Qb[22193]or Ub(2727,22193,55934)
-                        end
-                    elseif Bc<=37283 then
-                        if Bc>36259 then
-                            if Bc>37143 then
-                                yb[Ga[40045]]=rb[Ga[17956]];
-                                qa+=1;
-                                Bc=Qb[30728]or Ub(34406,30728,22454)
-                            elseif Bc<36842 then
-                                if(jb>223)then
-                                    Bc=Qb[569]or Ub(52421,569,20504)
-                                    continue
-                                else
-                                    Bc=Qb[-29661]or Ub(91207,-29661,38440)
-                                    continue
-                                end
-                                Bc=Qb[8464]or Ub(29090,8464,370)
-                            elseif Bc<=36842 then
-                                if jb>25 then
-                                    Bc=Qb[-24307]or Ub(55914,-24307,30247)
-                                    continue
-                                else
-                                    Bc=Qb[-13072]or Ub(15872,-13072,33599)
-                                    continue
-                                end
-                                Bc=Qb[18612]or Ub(22245,18612,9779)
-                            else
-                                Bc,rb[Ga[2373]]=Qb[12360]or Ub(24910,12360,29342),ya
-                            end
-                        elseif Bc>=35897 then
-                            if Bc>35929 then
-                                if(rb[Ga[21883]]<=rb[Ga[42517]])then
-                                    Bc=Qb[32727]or Ub(21331,32727,16261)
-                                    continue
-                                else
-                                    Bc=Qb[19416]or Ub(111678,19416,7482)
-                                    continue
-                                end
-                                Bc=Qb[32118]or Ub(32815,32118,20985)
-                            elseif Bc>35897 then
-                                ya=rb[zc];
-                                hb,ia,Ec,Bc=zc+1,1,zb,Qb[24435]or Ub(12891,24435,24892)
-                            else
-                                db,ya=zc[40045],Ga[40045];
-                                ya=Yb('*\134\140\231:q\152p','fv\198P')..ya;
-                                hb='';
-                                Bc,Ec,ia,ra=49599,139,(#db-1)+139,1
-                            end
-                        elseif Bc<=35651 then
-                            return z(rb,zc,zc+ya-1)
-                        else
-                            Ec,ia=zb[28904],Ga[28904];
-                            ia=Yb(') \31.9\215\v\185','e\208U\153')..ia;
-                            ra='';
-                            xa,n_,Bc,bc=1,216,8776,(#Ec-1)+216
-                        end
-                    elseif Bc>=38589 then
-                        if Bc<=38711 then
-                            if Bc>=38619 then
-                                if Bc<=38619 then
-                                    qa+=Ga[36987];
-                                    Bc=Qb[5652]or Ub(35440,5652,27580)
-                                else
-                                    qa+=1;
-                                    Bc=Qb[-11644]or Ub(117146,-11644,43434)
-                                end
-                            else
-                                zc[40045]=zb;
-                                Bc,Ga[42971]=Qb[-7265]or Ub(116367,-7265,38489),63
-                            end
-                        else
-                            if(rb[Ga[21883]]==rb[Ga[42517]])then
-                                Bc=Qb[7340]or Ub(4147,7340,4523)
-                                continue
-                            else
-                                Bc=Qb[-30395]or Ub(16809,-30395,7089)
-                                continue
-                            end
-                            Bc=Qb[21843]or Ub(126537,21843,36759)
-                        end
-                    elseif Bc>=38114 then
-                        if Bc<=38114 then
-                            qa+=Ga[36987];
-                            Bc=Qb[21387]or Ub(123657,21387,36055)
-                        else
-                            rb[Ga[21883]][rb[Ga[2373]]],Bc=rb[Ga[17956]],Qb[-776]or Ub(48730,-776,24554)
-                        end
-                    elseif Bc>37536 then
-                        Vb[Ga]=nil;
-                        qa+=1;
-                        Bc=Qb[19806]or Ub(5646,19806,59358)
-                    else
-                        zc,zb,db=Ga[40045],Ga[11985],rb[Ga[21883]]
-                        if(db==zc)~=zb then
-                            Bc=Qb[5577]or Ub(103714,5577,57266)
-                            continue
-                        else
-                            Bc=Qb[9272]or Ub(119854,9272,42572)
-                            continue
-                        end
-                        Bc=Qb[19209]or Ub(5908,19209,59168)
-                    end
-                elseif Bc>42694 then
-                    if Bc<=43855 then
-                        if Bc>43239 then
-                            if Bc>=43781 then
-                                if Bc<=43781 then
-                                    ra=R[qa];
-                                    qa+=1;
-                                    n_=ra[21883]
-                                    if n_==0 then
-                                        Bc=Qb[14662]or Ub(121334,14662,47670)
-                                        continue
-                                    elseif(n_==2)then
-                                        Bc=Qb[6065]or Ub(6928,6065,54644)
-                                        continue
-                                    else
-                                        Bc=Qb[12250]or Ub(33633,12250,6875)
-                                        continue
-                                    end
-                                    Bc=Qb[-14231]or Ub(36768,-14231,5528)
-                                else
-                                    if(zc==2)then
-                                        Bc=Qb[1818]or Ub(99548,1818,60001)
-                                        continue
-                                    else
-                                        Bc=Qb[-1407]or Ub(123238,-1407,60926)
-                                        continue
-                                    end
-                                    Bc=Qb[15258]or Ub(15804,15258,13598)
-                                end
-                            elseif Bc>43510 then
-                                zc=rb[Ga[21883]];
-                                rb[Ga[17956]],Bc=if zc then zc else Ga[40045]or false,Qb[22165]or Ub(48621,22165,23867)
-                            else
-                                bc=ia
-                                if ra~=ra then
-                                    Bc=Qb[-27236]or Ub(14797,-27236,64680)
-                                else
-                                    Bc=Qb[16043]or Ub(33106,16043,22539)
-                                end
-                            end
-                        elseif Bc<=43215 then
-                            if Bc<=42934 then
-                                if Bc>42871 then
-                                    q=false;
-                                    qa+=1
-                                    if(jb>133)then
-                                        Bc=Qb[13752]or Ub(8642,13752,14321)
-                                        continue
-                                    else
-                                        Bc=Qb[13365]or Ub(2560,13365,63121)
-                                        continue
-                                    end
-                                    Bc=Qb[15025]or Ub(45215,15025,16553)
-                                else
-                                    if jb>170 then
-                                        Bc=Qb[13246]or Ub(99159,13246,52491)
-                                        continue
-                                    else
-                                        Bc=Qb[-28883]or Ub(123665,-28883,21503)
-                                        continue
-                                    end
-                                    Bc=Qb[29288]or Ub(117316,29288,43920)
-                                end
-                            else
-                                if(Ec>=0 and ya>hb)or((Ec<0 or Ec~=Ec)and ya<hb)then
-                                    Bc=Qb[-1049]or Ub(11586,-1049,52882)
-                                else
-                                    Bc=43781
-                                end
-                            end
-                        elseif Bc<=43236 then
-                            ra=hb
-                            if Ec~=Ec then
-                                Bc=Qb[-16049]or Ub(93610,-16049,46272)
-                            else
-                                Bc=29087
-                            end
-                        else
-                            if(not rb[Ga[21883]])then
-                                Bc=Qb[9386]or Ub(114902,9386,50107)
-                                continue
-                            else
-                                Bc=Qb[856]or Ub(3869,856,61227)
-                                continue
-                            end
-                            Bc=Qb[-2060]or Ub(115152,-2060,37148)
-                        end
-                    elseif Bc>=44952 then
-                        if Bc>=45063 then
-                            if Bc<=45063 then
-                                Bc,db=Qb[14473]or Ub(124941,14473,64319),L-zb+1
-                            else
-                                qa-=1;
-                                Bc,R[qa]=Qb[-17353]or Ub(26177,-17353,30607),{[42971]=79,[21883]=ub(Ga[21883],134),[2373]=ub(Ga[2373],115),[17956]=0}
-                            end
-                        elseif Bc<=44952 then
-                            qa+=Ga[36987];
-                            Bc=Qb[-31326]or Ub(502,-31326,53510)
-                        else
-                            hb,Ec=zb(db,ya);
-                            ya=hb
-                            if ya==nil then
-                                Bc=45289
-                            else
-                                Bc=Qb[-1540]or Ub(16550,-1540,52040)
-                            end
-                        end
-                    elseif Bc>=44555 then
-                        if Bc>44555 then
-                            xa=R[qa];
-                            qa+=1;
-                            Fa=xa[21883]
-                            if(Fa==0)then
-                                Bc=Qb[22912]or Ub(101199,22912,59564)
-                                continue
-                            else
-                                Bc=Qb[7844]or Ub(126972,7844,10847)
-                                continue
-                            end
-                            Bc=Qb[-6319]or Ub(13408,-6319,10849)
-                        else
-                            ra,n_=rb[zc+2],nil;
-                            bc=ra;
-                            n_=Ra(bc)==Yb('\139\191\207\135\175\208','\229\202\162')
-                            if not n_ then
-                                Bc=Qb[18516]or Ub(106602,18516,11076)
-                                continue
-                            end
-                            Bc=23947
-                        end
-                    else
-                        if jb>123 then
-                            Bc=Qb[-32412]or Ub(43103,-32412,24401)
-                            continue
-                        else
-                            Bc=Qb[3022]or Ub(63560,3022,20377)
-                            continue
-                        end
-                        Bc=Qb[17329]or Ub(22969,17329,14663)
-                    end
-                elseif Bc<41433 then
-                    if Bc>40093 then
-                        if Bc>=40342 then
-                            if Bc>40342 then
-                                if zb<=ya then
-                                    Bc=Qb[-20956]or Ub(105331,-20956,45781)
-                                    continue
-                                end
-                                Bc=Qb[27702]or Ub(37312,27702,24844)
-                            else
-                                if(jb>231)then
-                                    Bc=Qb[29352]or Ub(122487,29352,35303)
-                                    continue
-                                else
-                                    Bc=Qb[12442]or Ub(115170,12442,2589)
-                                    continue
-                                end
-                                Bc=Qb[3735]or Ub(11883,3735,53173)
-                            end
-                        elseif Bc<=40143 then
-                            if(jb>239)then
-                                Bc=Qb[-9735]or Ub(23298,-9735,27601)
-                                continue
-                            else
-                                Bc=Qb[-19550]or Ub(27412,-19550,17909)
-                                continue
-                            end
-                            Bc=Qb[4385]or Ub(126896,4385,36732)
-                        else
-                            if jb>97 then
-                                Bc=Qb[-14525]or Ub(20219,-14525,29193)
-                                continue
-                            else
-                                Bc=Qb[14534]or Ub(129272,14534,62120)
-                                continue
-                            end
-                            Bc=Qb[-20067]or Ub(127455,-20067,33129)
-                        end
-                    elseif Bc>=39588 then
-                        if Bc>=40041 then
-                            if Bc<=40041 then
-                                qa+=Ga[36987];
-                                Bc=Qb[-3018]or Ub(1175,-3018,54433)
-                            else
-                                zb,db,ya=Ja
-                                if Cb(zb)~=Yb('\136\200Il\154\212Ha',"\238\189\'\15")then
-                                    Bc=Qb[-31855]or Ub(32422,-31855,15292)
-                                    continue
-                                end
-                                Bc=Qb[-4372]or Ub(128073,-4372,24036)
-                            end
-                        else
-                            Bc,zc,zb=35897,R[qa],nil
-                        end
-                    elseif Bc<=39093 then
-                        zc,zb=Ga[21883],Ga[40045];
-                        L=zc+6;
-                        db,ya=rb[zc],nil;
-                        ya=Ra(db)==Yb('71\156\217%-\157\212','QD\242\186')
-                        if(ya)then
-                            Bc=Qb[19932]or Ub(14065,19932,34859)
-                            continue
-                        else
-                            Bc=Qb[9921]or Ub(97942,9921,39813)
-                            continue
-                        end
-                        Bc=Qb[19833]or Ub(11538,19833,52514)
-                    else
-                        if jb>220 then
-                            Bc=Qb[-11250]or Ub(114584,-11250,34831)
-                            continue
-                        else
-                            Bc=Qb[-28765]or Ub(127742,-28765,31063)
-                            continue
-                        end
-                        Bc=Qb[-29678]or Ub(129262,-29678,38974)
-                    end
-                elseif Bc<42147 then
-                    if Bc>41693 then
-                        Bc,rb[Ga[21883]]=Qb[-17512]or Ub(22465,-17512,6365),db
-                    elseif Bc>=41691 then
-                        if Bc>41691 then
-                            Ec,Bc=Ec..Ob(ub(Xa(ya,(bc-143)+1),Xa(hb,(bc-143)%#hb+1))),Qb[26445]or Ub(33502,26445,3312)
-                        else
-                            zc,zb=Ga[28039],Ga[40045];
-                            db=yb[zb]or La[20735][zb]
-                            if(zc==1)then
-                                Bc=Qb[-5006]or Ub(129863,-5006,12389)
-                                continue
-                            else
-                                Bc=Qb[-23271]or Ub(10950,-23271,28628)
-                                continue
-                            end
-                            Bc=24415
-                        end
-                    else
-                        if(jb>29)then
-                            Bc=Qb[-9404]or Ub(10775,-9404,2954)
-                            continue
-                        else
-                            Bc=Qb[25359]or Ub(16321,25359,52424)
-                            continue
-                        end
-                        Bc=Qb[-14388]or Ub(117259,-14388,43989)
-                    end
-                elseif Bc>=42468 then
-                    if Bc<42666 then
-                        zc=Ga[11985]
-                        if(rb[Ga[21883]]==nil)~=zc then
-                            Bc=Qb[-5310]or Ub(26419,-5310,8865)
-                            continue
-                        else
-                            Bc=Qb[-18101]or Ub(34905,-18101,19631)
-                            continue
-                        end
-                        Bc=Qb[-30217]or Ub(121391,-30217,48121)
-                    elseif Bc>42666 then
-                        h'';
-                        Bc=Qb[-11740]or Ub(127585,-11740,41468)
-                    else
-                        if(jb>86)then
-                            Bc=Qb[22787]or Ub(90764,22787,62292)
-                            continue
-                        else
-                            Bc=Qb[5328]or Ub(4653,5328,61114)
-                            continue
-                        end
-                        Bc=Qb[-79]or Ub(6708,-79,64448)
-                    end
-                elseif Bc<=42147 then
-                    if(jb>146)then
-                        Bc=Qb[3296]or Ub(38464,3296,20225)
-                        continue
-                    else
-                        Bc=Qb[2990]or Ub(42132,2990,27441)
-                        continue
-                    end
-                    Bc=Qb[-2915]or Ub(19984,-2915,12252)
-                else
-                    if Fa==1 then
-                        Bc=Qb[-24138]or Ub(23267,-24138,13182)
-                        continue
-                    elseif(Fa==2)then
-                        Bc=Qb[-19059]or Ub(15417,-19059,56186)
-                        continue
-                    else
-                        Bc=Qb[14380]or Ub(128628,14380,58485)
-                        continue
-                    end
-                    Bc=Qb[-9907]or Ub(8185,-9907,56824)
-                end
-            end
+    else
+        env.reqDamage = originalDamage
+        if voidConn then voidConn:Disconnect() end
+    end
+end)
+
+-- 5. Fall damage immunity
+createToggle(scroll, "Fall Damage Immune", function(on)
+    if on then
+        env.reqDamage = function(amount, dtype)
+            if dtype ~= "fall" then originalDamage(amount, dtype) end
         end
-        return function(...)
-            local pb,fa_,Gb,m,C,_b,kb,Ba,Hb,Ia,ka;
-            pb,kb={},function(_a,Ua,B)
-                pb[Ua]=Jb(_a,47714)-Jb(B,58276)
-                return pb[Ua]
-            end;
-            Ia=pb[21021]or kb(17260,21021,98)
-            repeat
-                if Ia<=49435 then
-                    if Ia<=18648 then
-                        if Ia>16737 then
-                            Ia=pb[-30939]or kb(6535,-30939,35021)
-                            continue
-                        elseif Ia>5448 then
-                            C,Ba=oa[37927]+1,ka[Yb('\178','\220')]-oa[37927];
-                            Gb[34003]=Ba;
-                            Nb(ka,C,C+Ba-1,1,Gb[31888]);
-                            Ia=pb[-25547]or kb(112384,-25547,33452)
-                        else
-                            ka,_b,Gb=nc(...),sc(oa[33023]),{[34003]=0,[31888]={}};
-                            Nb(ka,1,oa[37927],0,_b)
-                            if oa[37927]<ka[Yb('\140','\226')]then
-                                Ia=pb[-16243]or kb(24946,-16243,31243)
-                                continue
-                            end
-                            Ia=pb[-30180]or kb(116459,-30180,13195)
-                        end
-                    elseif Ia<=44122 then
-                        C,Ba=f_(Sb(P,_b,oa[42141],oa[13683],Gb))
-                        if C[1]then
-                            Ia=pb[32038]or kb(86847,32038,2056)
-                            continue
-                        else
-                            Ia=pb[22896]or kb(118373,22896,18334)
-                            continue
-                        end
-                        Ia=pb[13211]or kb(105333,13211,15259)
-                    else
-                        Ia,m=pb[11293]or kb(77637,11293,23539),Ra(m)
-                    end
-                elseif Ia>=56528 then
-                    if Ia>56528 then
-                        return z(C,2,Ba)
-                    else
-                        return h(m,0)
-                    end
-                else
-                    m,Hb=C[2],nil;
-                    fa_=m;
-                    Hb=Ra(fa_)==Yb('\181Rv\175Hc','\198&\4')
-                    if(Hb==false)then
-                        Ia=pb[25232]or kb(71673,25232,3876)
-                        continue
-                    else
-                        Ia=pb[3760]or kb(119390,3760,26824)
-                        continue
-                    end
-                    Ia=56528
-                end
-            until Ia==14460
+    else
+        env.reqDamage = originalDamage
+    end
+end)
+
+-- 6. Suffocation immunity
+createToggle(scroll, "Suffocation Immune", function(on)
+    if on then
+        env.reqDamage = function(amount, dtype)
+            if dtype ~= "suffocation" then originalDamage(amount, dtype) end
+        end
+    else
+        env.reqDamage = originalDamage
+    end
+end)
+
+-- 7. Infinite Health
+createToggle(scroll, "Infinite Health", function(on)
+    local human = env.char and env.char:FindFirstChild("Humanoid")
+    if human then
+        if on then
+            human.MaxHealth = 9e9
+            human.Health = 9e9
+            human:GetPropertyChangedSignal("Health"):Connect(function()
+                human.Health = 9e9
+            end)
+        else
+            -- Can't easily revert; rejoin
         end
     end
-    return cc(cb,mc)
 end)
-local lc;
-lc,ob={[0]=0},function()
-    lc[0]=lc[0]+(-12049- -12050)
-    return{[91428/30476]=lc,[14269/14269]=lc[0]}
-end;
-Db=aa
-return(function()
-    return Db(va(Ta'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'),{})
-end)()(...)
+
+-- 8. Creative Mode
+createToggle(scroll, "Creative Mode", function(on)
+    if on then
+        env.M_GameUtil.getGamemode = function() return 1 end
+    else
+        env.M_GameUtil.getGamemode = function() return 0 end
+    end
+end)
+
+-- 9. Fly / No-Clip
+local flyConn, grav, swim
+createToggle(scroll, "Fly", function(on)
+    local char = env.char
+    local human = char.Humanoid
+    local root = char.HumanoidRootPart
+    local uis = game:GetService("UserInputService")
+    if on then
+        human:SetStateEnabled(Enum.HumanoidStateType.Freefall, false)
+        human:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        if root:FindFirstChild("Grav") then root.Grav:Destroy() end
+        if root:FindFirstChild("Swim") then root.Swim:Destroy() end
+        flyConn = uis.InputBegan:Connect(function(input, gp)
+            if gp then return end
+            if input.KeyCode == Enum.KeyCode.E then
+                while uis:IsKeyDown(Enum.KeyCode.E) do root.Velocity = root.Velocity + Vector3.new(0,2,0); task.wait() end
+            elseif input.KeyCode == Enum.KeyCode.Q then
+                while uis:IsKeyDown(Enum.KeyCode.Q) do root.Velocity = root.Velocity + Vector3.new(0,-2,0); task.wait() end
+            end
+        end)
+    else
+        human:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
+        human:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+        if flyConn then flyConn:Disconnect() end
+    end
+end)
+
+-- 10. Super Speed (change value to any number)
+createToggle(scroll, "Super Speed", function(on)
+    if on then env.char.Humanoid.WalkSpeed = 100 else env.char.Humanoid.WalkSpeed = 12 end
+end)
+
+-- 11. Instant Block Break
+createToggle(scroll, "Instant Break", function(on)
+    if on then
+        env.beginBreakingBlock = function(x, y, z, force, hit_pos)
+            originalBeginBreaking(x, y, z, force, hit_pos)
+            if env.breaking then env.breakTimer = 0 end
+        end
+    else
+        env.beginBreakingBlock = originalBeginBreaking
+    end
+end)
+
+-- 12. Reach Hack (infinite distance)
+createToggle(scroll, "Reach Hack", function(on)
+    if on then env.Globals.IsBlockInReach = true else env.Globals.IsBlockInReach = false end
+end)
+
+-- 13. Place Anywhere
+createToggle(scroll, "Place Anywhere", function(on)
+    if on then
+        env.attemptPlace = function()
+            local oldSolid = env.is_solid
+            env.is_solid = false
+            originalAttemptPlace()
+            env.is_solid = oldSolid
+        end
+    else
+        env.attemptPlace = originalAttemptPlace
+    end
+end)
+
+-- 14. Give Item (click once)
+createToggle(scroll, "Give Diamond Sword", function(on)
+    if on then
+        env.selSlotV.Value = game:GetService("HttpService"):JSONEncode({
+            name = "DiamondSword",
+            count = 64,
+            durability = 9999
+        })
+        -- Auto-disable after giving to prevent spam
+        task.wait(0.1)
+        env.selSlotV.Value = originalSelSlotValue -- not stored, so not reversible; better to just use button click
+    end
+end)
+
+-- 15. Infinite Durability
+createToggle(scroll, "Infinite Durability", function(on)
+    if on then
+        env.updateG_Durability = function(slot, tab)
+            if tab.durability then tab.durability = 9999 end
+            originalUpdateDurability(slot, tab)
+        end
+    else
+        env.updateG_Durability = originalUpdateDurability
+    end
+end)
+
+-- 16. No Attack Cooldown
+createToggle(scroll, "No Attack CD", function(on)
+    if on then
+        env.swingCooldown = false
+        env.canattack = true
+        env.game.ReplicatedStorage.GameRemotes.Attack.InvokeServer = function(target) return nil, nil end
+    else
+        env.game.ReplicatedStorage.GameRemotes.Attack.InvokeServer = originalAttackInvoke
+    end
+end)
+
+-- 17. Item Magnet
+local magnetConn
+createToggle(scroll, "Item Magnet", function(on)
+    if on then
+        magnetConn = game:GetService("RunService").RenderStepped:Connect(function()
+            for _, ent in pairs(env.entities) do
+                if ent.part and ent.part.Parent == workspace then
+                    ent.part.CFrame = env.char.HumanoidRootPart.CFrame
+                end
+            end
+        end)
+    else
+        if magnetConn then magnetConn:Disconnect() end
+    end
+end)
+
+-- 18. Fullbright
+createToggle(scroll, "Fullbright", function(on)
+    local lighting = game:GetService("Lighting")
+    if on then
+        lighting.Brightness = 10
+        lighting.FogEnd = 1e5
+        lighting.FogStart = 0
+        lighting.Ambient = Color3.new(1,1,1)
+        lighting.OutdoorAmbient = Color3.new(1,1,1)
+    else
+        lighting.Brightness = 2
+        lighting.FogEnd = 2000
+        lighting.FogStart = 500
+    end
+end)
+
+-- 19. X-Ray
+createToggle(scroll, "X-Ray", function(on)
+    for _, part in pairs(workspace.Blocks:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Transparency = on and 0.7 or 0
+        end
+    end
+    -- Highlight players
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            local hl = p.Character:FindFirstChild("ESP_Highlight")
+            if on and not hl then
+                hl = Instance.new("Highlight", p.Character)
+                hl.Name = "ESP_Highlight"
+                hl.FillTransparency = 0.5
+                hl.OutlineColor = Color3.new(1,0,0)
+            elseif not on and hl then
+                hl:Destroy()
+            end
+        end
+    end
+end)
